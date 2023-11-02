@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConjurConstant.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Conjur MuleSoft Custom Connector</a> &gt; <a href="index.source.html" class="el_package">com.cyberark.conjur.constant</a> &gt; <span class="el_source">ConjurConstant.java</span></div><h1>ConjurConstant.java</h1><pre class="source lang-java linenums">package com.cyberark.conjur.constant;
+
+/**
+ * All error and constants for the Conjur Constant defined
+ * 
+ * @author Jaleela.FaizurRahman
+ *
+ */
+<span class="fc" id="L9">public class ConjurConstant {</span>
+
+	/**
+	 * Generic extension for properties define at conjur.properties.
+	 */
+	public static final String CONJUR_MAPPING = &quot;conjur.mapping.&quot;;
+
+	/**
+	 * Conjur_Kind.
+	 */
+	public static final String CONJUR_KIND = &quot;variable&quot;;
+
+	/**
+	 * Custom property file name.
+	 */
+	public static final String CONJUR_PROPERTIES = &quot;/conjur.properties&quot;;
+
+	/**
+	 * Environment variable.
+	 */
+<span class="fc" id="L29">	public static final String CONJUR_ACCOUNT = System.getenv(&quot;CONJUR_ACCOUNT&quot;);</span>
+
+	/**
+	 * Error Message.
+	 */
+	public static final String CONJUR_APIKEY_ERROR = &quot;Please provide Conjur Authn Token file or else api Key in environment Variable&quot;;
+
+	/**
+	 * Not Found message.
+	 */
+	public static final String NOT_FOUND = &quot;NotFound&quot;;
+	/**
+	 * Conjur connection is successful
+	 */
+	public static final String CODE_200_CONNECTION = &quot;Connection with Conjur is successful&quot;;
+
+	/**
+	 * Secret value successfully retrieved
+	 */
+	public static final String CODE_200_DATA_FOUND = &quot;The secret values was retrieved successfully.&quot;;
+	/**
+	 * Invalid authentication credentials
+	 */
+	public static final String CODE_401 = &quot;The request lacks valid authentication credentials.&quot;;
+	/**
+	 * Invalid privilege
+	 */
+	public static final String CODE_403 = &quot;The authenticated user lacks the necessary privilege.&quot;;
+	/**
+	 * Variable or data not found for single retrieval
+	 */
+	public static final String CODE_404_SINGLE_RETRIEVAL = &quot;The variable does not exist, or it does not have any secret values.&quot;;
+	/**
+	 * Variable does not exist or variable does not have data for Batch retrieval
+	 */
+	public static final String CODE_404_BATCH_RETRIEVAL = &quot;At least one variable does not exist, or at least one variable does not have any secret values.&quot;;
+	/**
+	 * Missing or invalid parameter
+	 */
+	public static final String CODE_422 = &quot;A request parameter was missing or invalid.&quot;;
+	
+	/**InValid Account*/
+	public static final String INVALID_ACCOUNT=&quot;Missing or invalid ConjurAccount&quot;;
+	
+	/**Invalid BaseUrl*/
+	public static final String INVALID_BASEURL=&quot;Missing or invalid Conjur BaseUrl/ApplianceUrl&quot;;
+	
+	/**Invalid AuthenticationLogin */
+	public static final String INVALID_USERNAME=&quot;Missing or invalid Conjur AuthnLogin&quot;;
+	
+	/**Invalid BaseUrl*/
+	public static final String INVALID_SSLCERT=&quot;Missing or invalid Conjur SSLCertificate&quot;;
+	
+	/**Invalid APIKey*/
+	public static final String INVALID_APIKEY=&quot;Missing or invalid API KEY&quot;;
+	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

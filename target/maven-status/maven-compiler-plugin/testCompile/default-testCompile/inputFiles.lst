@@ -1,0 +1,11 @@
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/error/ConjurErrorProviderTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/core/ConjurConnectionTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/mulesoft/internal/ConjurMuleConfigurationTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/mulesoft/internal/ConjurMuleExtensionTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/mulesoft/internal/ConjurMuleConnectionTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/service/ConjurServiceTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/authentication/AccessTokenProviderTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/mulesoft/internal/ConjurMuleConnectionProviderTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/mulesoft/internal/ConjurMuleOperationsTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/domain/ConjurConfigurationTest.java
+/Applications/ConjurMuleSoftConnectorLatest/conjur-mulesoft-connector/src/test/java/com/cyberark/conjur/constant/ConjurConstantTest.java

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConjurMuleExtension.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Conjur MuleSoft Custom Connector</a> &gt; <a href="index.source.html" class="el_package">com.cyberark.conjur.mulesoft.internal</a> &gt; <span class="el_source">ConjurMuleExtension.java</span></div><h1>ConjurMuleExtension.java</h1><pre class="source lang-java linenums">package com.cyberark.conjur.mulesoft.internal;
+
+import org.mule.runtime.extension.api.annotation.Configurations;
+import org.mule.runtime.extension.api.annotation.Extension;
+import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
+import org.mule.runtime.extension.api.annotation.error.ErrorTypes;
+
+import com.cyberark.conjur.error.ConjurErrorTypes;
+
+
+/**
+ * This is the main class of an extension, is the entry point from which configurations, connection providers, operations
+ * and sources are going to be declared.
+ */
+@Xml(prefix = &quot;conjurvaultconnector&quot;)
+@Extension(name = &quot;ConjurVaultConnector&quot;)
+@Configurations(ConjurMuleConfiguration.class)
+@ErrorTypes(ConjurErrorTypes.class)
+<span class="fc" id="L19">public class ConjurMuleExtension {</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

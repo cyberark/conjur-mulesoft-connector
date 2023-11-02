@@ -1,0 +1,13 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.domain,ConjurConfiguration,0,52,0,0,0,22,0,15,0,15
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.error,ConjurErrorProvider,0,13,0,0,0,4,0,2,0,2
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.error,ConjurErrorTypes,4,23,0,0,1,5,1,2,1,2
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.core,ConjurConnection,79,83,10,6,19,27,8,5,0,5
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.constant,ConjurConstant,0,7,0,0,0,2,0,2,0,2
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.authentication,AccessTokenProviderImpl,0,26,0,0,0,8,0,3,0,3
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.mulesoft.internal,ConjurMuleConnectionProvider,166,47,13,1,32,13,8,4,1,4
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.mulesoft.internal,ConjurMuleConfiguration,0,14,0,0,0,5,0,3,0,3
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.mulesoft.internal,ConjurMuleOperations,4,20,0,0,2,7,0,2,0,2
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.mulesoft.internal,ConjurMuleExtension,0,3,0,0,0,1,0,1,0,1
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.mulesoft.internal,ConjurMuleConnection,1,31,0,0,1,11,1,5,1,5
+Conjur MuleSoft Custom Connector,com.cyberark.conjur.service,ConjurServiceImpl,104,20,4,0,18,5,3,2,1,2

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -x 
+set -e
+
+# CONJUR_USERNAME="host/data/shared_policy/v1/api_key_conjur"
+# CONJUR_API_KEY=${API_KEY}
+# CLOUD_URL=${CONJUR_CLOUD_URL}
+
+# provide the identity or host id in the below format
+# if host_id is: "host/data/shared_policy/v1/api_key_conjur" then convert it to this format: "host%2Fdata%2Fshared_policy%2Fv1%2Fapi_key_conjur".
+
+# docker build -t conjur-mule-image .
+
+HOST_IDENTITY="host%2Fdata%2Fshared_policy%2Fv1%2Fapi_key_conjur"
+VARIABLE_PATH="data/vault/ADO_Secret/ado_secret_apikey/username"
+VARIABLE_PATH_1="data/vault/ADO_Secret/ado_secret_apikey/password"
+VARIABLE_PATH_2="data/vault/ADO_Secret/ado_secret_apikey/address"
+
+docker run \
+  -e "CONJUR_CLOUD_URL=${CONJUR_CLOUD_URL}" \
+  -e "CONJUR_ACCOUNT=${CONJUR_ACCOUNT}" \
+  -e "HOST_IDENTITY=${HOST_IDENTITY}" \
+  -e "CONJUR_AUTHN_API_KEY=${API_KEY}" \
+  -e "VARIABLE_PATH=${VARIABLE_PATH}" \
+  -e "VARIABLE_PATH_1${VARIABLE_PATH_1}" \
+  -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
+  --rm \
+  --entrypoint /bin/bash \
+  conjur-mule-image \
+  ./fetch_secrets.sh

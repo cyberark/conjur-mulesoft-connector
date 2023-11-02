@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConjurServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Conjur MuleSoft Custom Connector</a> &gt; <a href="index.source.html" class="el_package">com.cyberark.conjur.service</a> &gt; <span class="el_source">ConjurServiceImpl.java</span></div><h1>ConjurServiceImpl.java</h1><pre class="source lang-java linenums">package com.cyberark.conjur.service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.cyberark.conjur.sdk.ApiException;
+import com.cyberark.conjur.sdk.endpoint.SecretsApi;
+/**
+ * 
+ * Returns the secrets as single/Batch retrieval
+ *
+ */
+<span class="fc" id="L13">public class ConjurServiceImpl implements ConjurService {</span>
+
+<span class="fc" id="L15">	private final Logger LOGGER = LoggerFactory.getLogger(ConjurServiceImpl.class);</span>
+
+<span class="fc" id="L17">	SecretsApi secretsApi = new SecretsApi();</span>
+<span class="fc" id="L18">	Object secrets = null;</span>
+
+	/**
+	 * Method to fetch secret based on the key provided
+	 * @param String conjurAccount
+	 * @param String variable_const &quot;variable&quot;
+	 * @param String variableId/key
+	 * @return String secret for the key provided
+	 * @throws ApiException if key not found or data not found
+	 */
+	@Override
+	public Object getSecret(String account, String variable_const, String variableId) throws ApiException {
+
+<span class="fc" id="L31">		LOGGER.info(&quot;Getting secret for account: {}&quot;, account);</span>
+<span class="nc" id="L32">		secrets = secretsApi.getSecret(account, &quot;variable&quot;, variableId);</span>
+<span class="nc" id="L33">		LOGGER.info(&quot;Secret retrieved successfully.&quot;);</span>
+<span class="nc" id="L34">		return secrets;</span>
+	}
+	/**
+	 * Method to fetch secret as batch based on the key(s) provided
+	 * @param String  comma separated encoded variableId's/key's
+	 * @param String conjurAccount 
+	 * @return Object secret for the keys provided as JSON
+	 * @throws ApiException if key not found or data not found
+	 */
+	@Override
+	public Object getBatchSecrets(String variableIds, String account) throws ApiException {
+
+<span class="nc" id="L46">		LOGGER.info(&quot;Getting secrets for account: {}&quot;, account);</span>
+<span class="nc" id="L47">		String[] keys = variableIds.split(&quot;,&quot;);</span>
+<span class="nc" id="L48">		StringBuilder encodeKey = new StringBuilder();</span>
+
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		for (String k : keys) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">			if (encodeKey.length() == 0) {</span>
+
+<span class="nc" id="L53">				encodeKey.append(account + &quot;:&quot;);</span>
+<span class="nc" id="L54">				encodeKey.append(&quot;variable:&quot;);</span>
+<span class="nc" id="L55">				encodeKey.append(k);</span>
+
+			} else {
+<span class="nc" id="L58">				encodeKey.append(&quot;,&quot;);</span>
+<span class="nc" id="L59">				encodeKey.append(account + &quot;:&quot;);</span>
+<span class="nc" id="L60">				encodeKey.append(&quot;variable:&quot;);</span>
+<span class="nc" id="L61">				encodeKey.append(k);</span>
+			}
+		}
+
+<span class="nc" id="L65">		secrets = secretsApi.getSecrets(encodeKey.toString());</span>
+<span class="nc" id="L66">		LOGGER.info(&quot;Secrets retrieved successfully.&quot;);</span>
+<span class="nc" id="L67">		return secrets;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

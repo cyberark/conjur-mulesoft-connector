@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConjurConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Conjur MuleSoft Custom Connector</a> &gt; <a href="index.source.html" class="el_package">com.cyberark.conjur.domain</a> &gt; <span class="el_source">ConjurConfiguration.java</span></div><h1>ConjurConfiguration.java</h1><pre class="source lang-java linenums">package com.cyberark.conjur.domain;
+
+
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+
+/** 
+ * POJO class for Conjur Configuration/Authentication parameter
+ * 
+ *
+ */
+<span class="fc" id="L11">public class ConjurConfiguration {</span>
+
+	@Parameter
+	private String configId;
+
+	public String getConfigId() {
+<span class="fc" id="L17">		return configId;</span>
+	}
+	
+	/** 
+	 * Conjur Account
+	 */
+
+	@Parameter
+	private String conjurAccount;
+	/**
+	 * Conjur ApplianceURL/basepath
+	 */
+	@Parameter
+	private String conjurApplianceUrl;
+	/**
+	 * Conjur Authn Login /UserName
+	 */
+	@Parameter
+	private String conjurAuthnLogin;
+	/**
+	 * Conjur API Key
+	 */
+	@Parameter
+	private String conjurApiKey;
+	/**
+	 * Conjur SSL Certificate
+	 */
+	@Parameter
+	private String conjurSslCertificate;
+	/**
+	 * Conjur CertFile
+	 */
+	@Parameter
+	private String conjurCertFile;
+	
+/**
+ * Getter method to return Conjur Account
+ * @return String
+ */
+	public String getConjurAccount() {
+<span class="fc" id="L57">		return conjurAccount;</span>
+	}
+	/**
+	 * Getter method to return Conjur Appliance Url
+	 * @return String
+	 */
+
+	public String getConjurApplianceUrl() {
+<span class="fc" id="L65">		return conjurApplianceUrl;</span>
+	}
+	/**
+	 * Getter method to return Conjur Authentication User
+	 * @return String
+	 */
+
+	public String getConjurAuthnLogin() {
+<span class="fc" id="L73">		return conjurAuthnLogin;</span>
+	}
+
+	/**
+	 * Getter method to return Conjur Api Key
+	 * @return String
+	 */
+	public String getConjurApiKey() {
+<span class="fc" id="L81">		return conjurApiKey;</span>
+	}
+	/**
+	 * Getter method to return Conjur SSL Certificate
+	 * @return String
+	 */
+
+	public String getConjurSslCertificate() {
+<span class="fc" id="L89">		return conjurSslCertificate;</span>
+	}
+
+	/**
+	 * Getter method to return Conjur Cert File
+	 * @return String
+	 */
+	public String getConjurCertFile() {
+<span class="fc" id="L97">		return conjurCertFile;</span>
+	}
+
+	public void setConfigId(String configId) {
+<span class="fc" id="L101">		this.configId = configId;</span>
+<span class="fc" id="L102">	}</span>
+	
+	/**
+	 * Setter method to return Conjur Account
+	 * @param String
+	 */
+
+	public void setConjurAccount(String conjurAccount) {
+<span class="fc" id="L110">		this.conjurAccount = conjurAccount;</span>
+<span class="fc" id="L111">	}</span>
+	/**
+	 * Setter method to return Conjur Appliance URL
+	 * @param String
+	 */
+
+	public void setConjurApplianceUrl(String conjurApplianceUrl) {
+<span class="fc" id="L118">		this.conjurApplianceUrl = conjurApplianceUrl;</span>
+<span class="fc" id="L119">	}</span>
+	/**
+	 * Setter method to return Conjur Authentication User
+	 * @param String
+	 */
+
+	public void setConjurAuthnLogin(String conjurAuthnLogin) {
+<span class="fc" id="L126">		this.conjurAuthnLogin = conjurAuthnLogin;</span>
+<span class="fc" id="L127">	}</span>
+	/**
+	 * Setter method to return Conjur API Key
+	 * @param String
+	 */
+	public void setConjurApiKey(String conjurApiKey) {
+<span class="fc" id="L133">		this.conjurApiKey = conjurApiKey;</span>
+<span class="fc" id="L134">	}</span>
+	/**
+	 * Setter method to return Conjur SSL Certificate
+	 * @param String
+	 */
+	public void setConjurSslCertificate(String conjurSslCertificate) {
+<span class="fc" id="L140">		this.conjurSslCertificate = conjurSslCertificate;</span>
+<span class="fc" id="L141">	}</span>
+	
+	/**
+	 * Setter method to return Conjur Cert File
+	 * @param String
+	 */
+
+	public void setConjurCertFile(String conjurCertFile) {
+<span class="fc" id="L149">		this.conjurCertFile = conjurCertFile;</span>
+<span class="fc" id="L150">	}</span>
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

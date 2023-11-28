@@ -67,20 +67,19 @@ services:
       CONJUR_AUTHN_LOGIN: admin
       CONJUR_AUTHN_API_KEY:
 
-  # app:
-  #   image: conjur-mule-image
-  #   environment:
-  #     CONJUR_APPLIANCE_URL: https://proxy
-  #     CONJUR_ACCOUNT: dev
-  #     CONJUR_AUTHN_LOGIN: admin
-  #     CONJUR_AUTHN_API_KEY:
-  #     CONJUR_CERT_FILE: /conjur-dev.pem
-  #   volumes:
-  #     - ./conjur-dev.pem:/conjur-dev.pem
-  #   tty: true
-
-  #   ports:
-  #     - 8076
+  conjur-mule-image:
+    image: conjur-mule-image
+    environment:
+      CONJUR_APPLIANCE_URL: https://proxy
+      CONJUR_ACCOUNT: dev
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY:
+      CONJUR_CERT_FILE: /conjur-dev.pem
+    volumes:
+      - ./conjur-dev.pem:/conjur-dev.pem
+    tty: true
+    ports:
+      - 8076
 
 
 # version: "3"

@@ -1,1 +1,8 @@
 .DS_Store
+target/
+.env
+api_key
+conf/tls/nginx.*
+*.jar
+logs/
+maven_cache/

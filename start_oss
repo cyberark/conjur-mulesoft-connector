@@ -7,7 +7,7 @@ rm -rf .env
 get_container_logs(){
   mkdir -p logs
   docker compose ps --format json \
-    |jq -r  '.[]|.Name' \
+    |jq -s -r  '.[]|.Name' \
     |while read -r container; do \
       docker logs "${container}" &> "logs/${container}.log"
     done
@@ -53,7 +53,7 @@ docker compose run \
   --no-deps \
   client \
   -ec '
-   yes yes | conjur init -u https://proxy -a dev
+   yes yes | conjur init -u https://proxy -a dev --self-signed
    conjur variable set -i db/password -v secret
    conjur variable set -i db/dbuserName -v 123456
    conjur variable set -i db/dbpassWord -v 7890123

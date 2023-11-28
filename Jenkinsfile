@@ -78,20 +78,6 @@ pipeline {
         }
       }
     }
-    stage('Stage running on Atlantis Jenkins Agent Container'){
-        steps {
-            sh 'scripts/in-container.sh'
-        }
-    }
-    stage('Stage on AWS Instance') {
-      steps {
-        script {
-          // Run script from repo on an AWS instance managed by infrapool
-          infrapool.agentSh 'scripts/on-instance.sh'
-          // infrapool.agentSh './bin/test enterprise'
-        }
-      }
-    }
     stage('Mule test stage') {
       steps {
         script {
@@ -109,7 +95,7 @@ pipeline {
         }
       }
     }
-    
+
     stage('Conjur Mule test stage enterprise') {
       steps {
         script {
@@ -127,8 +113,18 @@ pipeline {
           infrapool.agentSh './start_oss'
         }
       }
+      post {
+        always {
+          script {
+            infrapool.agentArchiveArtifacts artifacts: 'logs/*'
+            infrapool.agentStash name: 'surefire-reports-oss', includes: 'target/surefire-reports/*.xml'
+            unstash 'surefire-reports-oss'
+            junit 'target/surefire-reports/*.xml'
+          }
+        }
+      }
     }
-   
+
     stage('Release') {
       when {
         expression {

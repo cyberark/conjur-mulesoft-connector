@@ -31,7 +31,7 @@ docker run \
         -Dfile="${jar}" \
         -DgroupId=com.cyberark.conjur \
         -DartifactId=conjur-mule-connector \
-        -Dversion="0.0.1-${BUILD_NUMBER}" \
+        -Dversion="0.0.1-${BUILD_NUMBER:-123}" \
         -Dpackaging=jar \
         -DgeneratePom=true
 
@@ -41,7 +41,7 @@ docker run \
     --volume "${PWD}/maven_cache":/root/.m2 \
     --workdir "${PWD}" \
     tools \
-        mvn --batch-mode -f pom.xml versions:use-dep-version -Dincludes=com.cyberark:conjur-mule-connector -DdepVersion="0.0.1-${BUILD_NUMBER}"
+        mvn --batch-mode -f pom.xml versions:use-dep-version -Dincludes=com.cyberark:conjur-mule-connector -DdepVersion="0.0.1-${BUILD_NUMBER:-123}"
 
 docker run \
     --volume "${PWD}:${PWD}" \

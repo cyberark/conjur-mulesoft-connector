@@ -32,7 +32,7 @@ public class ConjurMuleOperations {
 			return connection.getErrorMsg();
 
 		}
-		return (String) secretVal;
+		return secretVal.toString();
 	}
 
 }

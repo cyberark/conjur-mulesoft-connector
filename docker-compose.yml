@@ -1,0 +1,249 @@
+version: '2'
+services:
+  pg:
+    image: postgres:9.4
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: password
+      POSTGRES_PASSWORD: SuperSecure
+
+  openssl:
+    image: cyberark/conjur
+    container_name: openssl
+    entrypoint:
+     - openssl
+     - req
+     - -newkey
+     - rsa:2048
+     - -days
+     - "365"
+     - -nodes
+     - -x509
+     - -config
+     - /tmp/conf/tls.conf
+     - -extensions
+     - v3_ca
+     - -keyout
+     - /tmp/conf/nginx.key
+     - -out
+     - /tmp/conf/nginx.crt
+    volumes:
+     - ./conf/tls/:/tmp/conf
+  conjur:
+    image: cyberark/conjur:latest
+    command: server -a dev -f /work/conjur.yml
+    environment:
+      DATABASE_URL: postgres://postgres:SuperSecure@pg/postgres
+      CONJUR_DATA_KEY: 'WMfApcDBtocRWV+ZSUP3Tjr5XNU+Z2FdBb6BEezejIs='
+      RAILS_ENV: development
+    ports:
+      - 80
+    volumes:
+      - .:/work
+    depends_on:
+      - pg
+      - openssl
+  proxy:
+    image: nginx:1.13.6-alpine
+    container_name: nginx_proxy
+    ports:
+      - "8443:443"
+    volumes:
+      - ./conf/:/etc/nginx/conf.d/:ro
+      - ./conf/tls/:/etc/nginx/tls/:ro
+    depends_on:
+    - conjur
+    - openssl
+    restart: on-failure
+
+  client:
+    image: cyberark/conjur-cli:8
+    container_name: client
+    depends_on:
+      - conjur
+    entrypoint: sh
+    environment:
+      CONJUR_APPLIANCE_URL: https://proxy
+      CONJUR_ACCOUNT: dev
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY:
+
+  conjur-mule-image:
+    image: conjur-mule-image
+    environment:
+      CONJUR_APPLIANCE_URL: https://proxy
+      CONJUR_ACCOUNT: dev
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY:
+      CONJUR_CERT_FILE: /conjur-dev.pem
+    volumes:
+      - ./conjur-dev.pem:/conjur-dev.pem
+    tty: true
+    ports:
+      - 8076
+
+
+# version: "3"
+# services:
+#   conjur:
+#     image: ${APPLIANCE_LEADER_IMAGE:-registry.tld/conjur-appliance-cuke-leader:5.0-stable}
+#     ports:
+#       - "443:443"
+#     environment:
+#       CONJUR_FEATURE_PKCE_SUPPORT_ENABLED: "true"
+#     security_opt:
+#         - "seccomp:unconfined"
+#     volumes:
+#       - certs:/opt/conjur/etc/ssl
+#       - authn-local:/run/authn-local
+#       - ../ci/oauth:/oauth
+#       - ../ci/oauth/scripts:/scripts
+#       # NOTE: When doing local development against local a cyberark/conjur
+#       #       repo, uncomment the following lines and update the left hand
+#       #       paths appropriately
+#       #
+#       # - /Users/Matthew.Felgate/conjur/lib:/opt/conjur/possum/lib
+#       # - /Users/Matthew.Felgate/conjur/config:/opt/conjur/possum/config
+#       # - /Users/Matthew.Felgate/conjur/app:/opt/conjur/possum/app
+#     links:
+#       - ldap-server
+#       - testdb
+
+#   conjur-standby-1:
+#     image: ${APPLIANCE_STANDBY_IMAGE:-registry.tld/conjur-appliance-cuke-standby:5.0-stable}
+#     ports:
+#       - "444:443"
+#     security_opt:
+#         - "seccomp:unconfined"
+#     volumes:
+#       - authn-local:/run/authn-local
+#     links:
+#       - ldap-server
+#       - conjur:cuke-leader
+
+#   conjur-standby-2:
+#     image: ${APPLIANCE_STANDBY_IMAGE:-registry.tld/conjur-appliance-cuke-standby:5.0-stable}
+#     ports:
+#       - "445:443"
+#     security_opt:
+#         - "seccomp:unconfined"
+#     volumes:
+#       - authn-local:/run/authn-local
+#     links:
+#       - ldap-server
+#       - conjur:cuke-leader
+
+#   conjur-follower:
+#     image: ${APPLIANCE_FOLLOWER_IMAGE:-registry.tld/conjur-appliance-cuke-follower:5.0-stable}
+#     ports:
+#       - "446:443"
+#     security_opt:
+#         - "seccomp:unconfined"
+#     volumes:
+#       - authn-local:/run/authn-local
+#     links:
+#       - ldap-server
+#       - conjur:cuke-leader
+
+#   # for testing the rotator
+#   testdb:
+#     image: postgres:9.3
+
+#   ui:
+#     build:
+#       context: ../
+#       dockerfile: dev/Dockerfile.dev
+#     entrypoint: sleep
+#     command: infinity
+#     working_dir: /src/ui
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       CONJUR_APPLIANCE_URL: https://conjur
+#       CAPYBARA_APP_HOST: http://ui:3000
+#       CONJUR_ACCOUNT: cucumber
+#       CONJUR_CERT_PATH: /opt/conjur/etc/ssl/conjur.pem
+#       SSL_CERT_FILE: /opt/conjur/etc/ssl/conjur.pem
+#       CONJUR_VERSION: 5
+#       UI_SESSION_TIMEOUT: 15
+#       RACK_ENV: development
+#       RAILS_ENV: development
+#     links:
+#       - conjur
+#       - selenium-server
+#     volumes:
+#       - ..:/src/ui
+#       - certs:/opt/conjur/etc/ssl
+#       - authn-local:/run/authn-local
+#       - ../ci/oauth/scripts:/scripts
+#       - ../ci/oauth:/oauth
+
+
+#   client:
+#     image: conjurinc/cli5
+#     working_dir:  -w /src/cli/dev
+#     environment:
+#       CONJUR_APPLIANCE_URL: https://conjur
+#       CONJUR_ACCOUNT: cucumber
+#       CONJUR_AUTHN_LOGIN: admin
+#     links:
+#       - conjur:conjur
+#     volumes:
+#       - ..:/src/cli
+#       - ./cli_cache:/root
+#       - certs:/opt/conjur/etc/ssl
+#       - ../ci/oauth:/oauth
+
+#   ldap-server:
+#     image: osixia/openldap
+#     command: --copy-service --loglevel debug
+#     hostname: ldap-server
+#     environment:
+#       LDAP_ADMIN_PASSWORD: ldapsecret
+#       LDAP_TLS_VERIFY_CLIENT: allow
+#     volumes:
+#       - ./ldap:/opt/ldap
+
+#   selenium-server:
+#     image: selenium/standalone-chrome:3.141
+#     expose:
+#       - "4444"
+#       - "7900"
+#     environment:
+#       - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps=
+
+# volumes:
+#   certs:
+#   authn-local:
+
+# # version: '3'
+# # services:
+# #   client:
+# #     image: cyberark/conjur-cli:5
+# #     entrypoint: sleep
+# #     command: infinity
+# #     environment:
+# #       CONJUR_APPLIANCE_URL:
+# #       CONJUR_ACCOUNT:
+# #       CONJUR_AUTHN_LOGIN:
+# #       CONJUR_AUTHN_API_KEY:
+# #       CONJUR_SSL_CERTIFICATE:
+# #     volumes:
+# #       - ./conf/policy:/policy
+
+# #   conjur_aws:
+# #     build:
+# #       context: .
+# #       dockerfile: Dockerfile
+# #     #image: conjur-mule-image
+# #     environment:
+# #       CONJUR_APPLIANCE_URL:
+# #       AUTHN_IAM_SERVICE_ID:
+# #       CONJUR_AUTHN_LOGIN:
+# #       CONJUR_ACCOUNT:
+# #       CONJUR_SSL_CERTIFICATE:
+# #       CONJUR_CERT_FILE:
+# #       TARGET:
+# #     working_dir: /app
+# #     # command: python3 testing.py
+
+

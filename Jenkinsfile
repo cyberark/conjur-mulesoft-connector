@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-
+@Library("product-pipelines-shared-library") _
 // Automated release, promotion and dependencies
 properties([
   // Include the automated release parameters for the build
@@ -64,7 +64,12 @@ pipeline {
         }
       }
     }
-
+   
+    stage('Update conjur-intro submodule is checked out') {
+      steps {
+          sh 'git submodule update --init --recursive'
+      }
+    }
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
       steps {
@@ -73,16 +78,49 @@ pipeline {
         }
       }
     }
-    stage('Stage running on Atlantis Jenkins Agent Container'){
-        steps {
-            sh 'scripts/in-container.sh'
-        }
-    }
-    stage('Stage on AWS Instance') {
+    stage('Mule test stage') {
       steps {
         script {
-          // Run script from repo on an AWS instance managed by infrapool
-          infrapool.agentSh 'scripts/on-instance.sh'
+          infrapool.agentSh './build_tool_image.sh'
+          infrapool.agentSh './build_package.sh'
+        }
+      }
+    }
+
+    stage('docker image conjur-mule-image') {
+      steps {
+        script {
+          infrapool.agentSh './deploy_mule.sh'
+          infrapool.agentSh 'summon ./start_mule'
+        }
+      }
+    }
+
+    stage('Conjur Mule test stage enterprise') {
+      steps {
+        script {
+          //  infrapool.agentSh './test'
+          //  infrapool.agentSh './start_oss'
+          infrapool.agentSh './start_enterprise'
+        }
+      }
+    }
+
+    stage('Conjur Mule test stage oss') {
+      steps {
+        script {
+          //  infrapool.agentSh './test'
+          infrapool.agentSh './start_oss'
+        }
+      }
+      post {
+        always {
+          script {
+            infrapool.agentArchiveArtifacts artifacts: 'logs/*'
+            infrapool.agentStash name: 'surefire-reports-oss', includes: 'target/surefire-reports/*.xml'
+            unstash 'surefire-reports-oss'
+            junit 'target/surefire-reports/*.xml'
+          }
         }
       }
     }

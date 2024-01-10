@@ -1,0 +1,22 @@
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:demo="http://www.mulesoft.org/schema/mule/demo" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+          http://www.mulesoft.org/schema/mule/demo http://www.mulesoft.org/schema/mule/demo/current/mule-demo.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+
+    <demo:config name="config" configId="configId">
+        <demo:connection requiredParameter="aValue" />
+    </demo:config>
+    <configuration-properties file="conjur.properties"/>
+
+    <flow name="retrieveSecret">
+        <demo:retrieve-info config-ref="config"/>
+		<flow-ref doc:name="Flow Reference" doc:id="a45cc288-" name="retrieveAccessToken"/>
+    </flow>
+    <flow name="retrieveAccessToken" doc:id="4fd10ba9">
+    
+    <demo:retrieve-access-token config-ref="config"/>
+    </flow>
+
+</mule>

@@ -1,0 +1,6 @@
+- !host mulesoft
+- !variable db/password
+- !variable "my var"
+- !variable db/dbuserName
+- !variable db/dbpassWord
+- !variable db/key

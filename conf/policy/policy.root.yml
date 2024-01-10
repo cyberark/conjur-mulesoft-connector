@@ -1,0 +1,3 @@
+# policy id needs to match the convention `conjur/authn-iam/<service ID>`
+- !policy conjurmule-example
+

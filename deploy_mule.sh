@@ -18,7 +18,7 @@ jar_path="${jar_paths[0]}"
 # Extract jar filename from path
 jar="$(basename "${jar_path}")"
 
-# Bring the spring boot conjur jar into this directory so
+# Bring the conjur-mule-connector jar into this directory so
 # it is accessible to docker.
 cp "${jar_path}" "${jar}"
 
@@ -31,7 +31,7 @@ docker run \
         -Dfile="${jar}" \
         -DgroupId=com.cyberark.conjur \
         -DartifactId=conjur-mule-connector \
-        -Dversion="0.0.1-${BUILD_NUMBER:-123}" \
+        -Dversion="0.0.1" \
         -Dpackaging=jar \
         -DgeneratePom=true
 
@@ -41,9 +41,8 @@ docker run \
     --volume "${PWD}/maven_cache":/root/.m2 \
     --workdir "${PWD}" \
     tools \
-        mvn --batch-mode -f pom.xml versions:use-dep-version -Dincludes=com.cyberark:conjur-mule-connector -DdepVersion="0.0.1-${BUILD_NUMBER:-123}"
-
-docker run \
+         mvn --batch-mode -f pom.xml versions:use-dep-version -Dincludes=com.cyberark:conjur-mule-connector -DdepVersion="0.0.1"
+  docker run \
     --volume "${PWD}:${PWD}" \
     --volume "${PWD}/maven_cache":/root/.m2 \
     --workdir "${PWD}" \
@@ -71,4 +70,4 @@ docker images | grep conjur-mule-image
 #     --volume "${PWD}/maven_cache":/root/.m2 \
 #     --workdir "${PWD}" \
 #     tools \
-#         mvn deploy -P anypoint-exchange-v3 -Dexchange-mule-maven-plugin=0.0.13 -Danypoint.username="fjaleelaRah75"  -Danypoint.password="Rahman1975#"
+#         mvn deploy -P anypoint-exchange-v3 -Dexchange-mule-maven-plugin=0.0.13 -Danypoint.username="anypointstudio userid"  -Danypoint.password="anypointstudio pwd"

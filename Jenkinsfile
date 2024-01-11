@@ -17,6 +17,8 @@ if (params.MODE == "PROMOTE") {
     // Anything added to assetDirectory will be attached to the Github Release
 
     //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
+    // Pass assetDirectory through to publish.sh as an env var.
+   
   }
   return
 }
@@ -74,11 +76,11 @@ pipeline {
     stage('Validate Changelog and set version') {
       steps {
         script {
-          updateVersion(infrapool, "CHANGELOG.md", "${BUILD_NUMBER}")
+          updateVersion(infrapool, "CHANGELOG.md","${BUILD_NUMBER}")
         }
       }
     }
-    stage('Mule test stage') {
+    stage('Mule Build') {
       steps {
         script {
           infrapool.agentSh './build_tool_image.sh'
@@ -116,7 +118,7 @@ pipeline {
       post {
         always {
           script {
-            infrapool.agentArchiveArtifacts artifacts: 'logs/*'
+            infrapool.agentArchiveArtifacts artifacts: 'target/*.jar'
             infrapool.agentStash name: 'surefire-reports-oss', includes: 'target/surefire-reports/*.xml'
             unstash 'surefire-reports-oss'
             junit 'target/surefire-reports/*.xml'
@@ -137,7 +139,8 @@ pipeline {
           release(infrapool, { billOfMaterialsDirectory, assetDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
-            infrapool.agentSh "mkdir -p target; cp target/* ${assetDirectory}"
+            infrapool.agentSh "mkdir -p target; cp target/*.jar ${assetDirectory}"
+           //INFRAPOOL_EXECUTORV2_AGENT_0.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
           })
         }
       }

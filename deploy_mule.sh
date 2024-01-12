@@ -31,7 +31,7 @@ docker run \
         -Dfile="${jar}" \
         -DgroupId=com.cyberark.conjur \
         -DartifactId=conjur-mule-connector \
-        -Dversion="0.0.1" \
+        -Dversion="1.0.0" \
         -Dpackaging=jar \
         -DgeneratePom=true
 

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Set up VERSION file for local development
+
+if [ ! -f "../VERSION" ]; then
+    echo -n "0.0.dev" > ../VERSION
+fi
+
 set -euo pipefail
 set -x
 
@@ -31,7 +37,7 @@ docker run \
         -Dfile="${jar}" \
         -DgroupId=com.cyberark.conjur \
         -DartifactId=conjur-mule-connector \
-        -Dversion="0.0.1" \
+        -Dversion="$(<VERSION)" \
         -Dpackaging=jar \
         -DgeneratePom=true
 

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Set up VERSION file for local development
+
+if [ ! -f "../VERSION" ]; then
+echo -n "0.0.dev" > ../VERSION
+fi
+
 set -euo pipefail
 set -x
 

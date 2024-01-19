@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cyberark.conjur</groupId>
 	<artifactId>conjur-mule-connector</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<!-- <packaging> value should be pom instead of mule-extension while deploying 
 		to the exchange or cloudhub -->
@@ -14,6 +14,110 @@
 	<description />
 	<!-- <parent> <groupId>org.mule.extensions</groupId> <artifactId>mule-modules-parent</artifactId> 
 		<version>1.1.3</version> </parent> -->
+	<profiles>
+		<!--  Profile for activating Artifactory as our deployment goal  -->
+		<profile>
+			<id>artifactory</id>
+			<distributionManagement>
+				<repository>
+					<id>conjurinc-releases</id>
+					<name>conjurinc-releases</name>
+					<url>https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
+				</repository>
+				<snapshotRepository>
+					<id>conjurinc-snapshots</id>
+					<name>conjurinc-snapshots</name>
+					<url>https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+		<!--  Profile for deploying and releasing to Maven Central through OSSRH  -->
+		<profile>
+			<id>ossrh</id>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+				<repository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.7</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.9.1</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!--  Profile for signing releases  -->
+		<profile>
+			<id>sign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<!--  This is necessary for gpg to not try to use the pinentry programs  -->
+									<gpgArguments>
+										<arg>--pinentry-mode</arg>
+										<arg>loopback</arg>
+										<arg>--passphrase-file</arg>
+										<arg>/gpg_password</arg>
+									</gpgArguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<properties>
 
 
@@ -60,7 +164,7 @@
 			<version>3.11.2</version>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
@@ -94,8 +198,6 @@
 		<!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/codesonar -->
 
 		<!-- https://mvnrepository.com/artifact/io.snyk/snyk-maven-plugin -->
-
-
 
 
 	</dependencies>
@@ -152,7 +254,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 
@@ -210,7 +312,18 @@
 			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
 		</pluginRepository>
 	</pluginRepositories>
-	<!-- <distributionManagement> <repository> <id>anypoint-exchange-v3</id> 
-		<name>Anypoint Exchange</name> <url>https://maven.anypoint.mulesoft.com/api/v3/organizations/<orgainzationID>/maven 
-		</url> <layout>default</layout> </repository> </distributionManagement> -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>conjurinc-snapshots</id>
+			<name>conjurinc-snapshots</name>
+			<url>https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+		<repository>
+			<id>conjurinc-releases</id>
+			<name>conjurinc-releases</name>
+			<url>https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
+			<uniqueVersion>false</uniqueVersion>
+		</repository>
+	</distributionManagement>
 </project>

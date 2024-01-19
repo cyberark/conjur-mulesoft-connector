@@ -18,8 +18,21 @@ if (params.MODE == "PROMOTE") {
 
     //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
     // Pass assetDirectory through to publish.sh as an env var.
-   
+    env.ASSET_DIR=assetDirectory
+
+    infrapool.agentSh """
+      set -xuo pipefail
+      git checkout "v${sourceVersion}"
+      echo -n "${targetVersion}" > VERSION
+      cp VERSION VERSION.original
+      ./build_tool_image.sh
+      ./build_package.sh
+      summon ./publish.sh
+      cp target/*.jar "${assetDirectory}"
+    """
   }
+
+  release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
   return
 }
 
@@ -139,8 +152,7 @@ pipeline {
           release(infrapool, { billOfMaterialsDirectory, assetDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
-            infrapool.agentSh "mkdir -p target; cp target/*.jar ${assetDirectory}"
-           //INFRAPOOL_EXECUTORV2_AGENT_0.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+            infrapool.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
           })
         }
       }

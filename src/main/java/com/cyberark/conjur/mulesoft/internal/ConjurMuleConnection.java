@@ -37,7 +37,7 @@ public final class ConjurMuleConnection {
 	/**
 	 * Get the unique config ID to pass to the calling flow
 	 * 
-	 * @return String
+	 * @return String id
 	 */
 	public String getId() {
 		return id;

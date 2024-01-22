@@ -14,14 +14,11 @@ public enum ConjurErrorTypes implements ErrorTypeDefinition<ConjurErrorTypes> {
 	
 	INVALID_DATA(MuleErrors.VALIDATION);
 	private ErrorTypeDefinition<? extends Enum<?>> parent;
-
 	ConjurErrorTypes(ErrorTypeDefinition<? extends Enum<?>> parent) {
 	    this.parent = parent;
 	  }
-
 	  @Override
 	  public Optional<ErrorTypeDefinition<? extends Enum<?>>> getParent() {
 	    return Optional.ofNullable(parent);
 	  }
-
 }

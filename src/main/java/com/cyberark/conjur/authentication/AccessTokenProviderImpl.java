@@ -34,7 +34,6 @@ public class AccessTokenProviderImpl implements AccessTokenProvider {
 		} catch (Exception ex) {
 			throw new ApiException(ex);
 		}
-
 	}
 
 	/*
@@ -46,7 +45,6 @@ public class AccessTokenProviderImpl implements AccessTokenProvider {
 	 * 
 	 * @throws ApiException
 	 */
-
 	@Override
 	public AccessToken getJwtAccessToken(ApiClient conjurClient, String jwtTokenPath, String authenticatorId) {
 

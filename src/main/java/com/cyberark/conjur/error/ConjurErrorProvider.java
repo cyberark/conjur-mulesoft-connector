@@ -8,8 +8,6 @@ import org.mule.runtime.extension.api.error.ErrorTypeDefinition;
 
 /** 
  * Provides set of errors to handled for this Custom Connector when integrated with the flow
- * @
- *
  */
 public class ConjurErrorProvider implements ErrorTypeProvider{
 

@@ -27,9 +27,8 @@ if (params.MODE == "PROMOTE") {
       cp VERSION VERSION.original
       ./build_tool_image.sh
       ./build_package.sh
-      summon ./publish.sh
-      cp target/*.jar "${assetDirectory}"
     """
+    infrapool.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
   }
 
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)

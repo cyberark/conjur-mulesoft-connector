@@ -21,5 +21,4 @@ public class ConjurErrorProvider implements ErrorTypeProvider{
 		errors.add(ConjurErrorTypes.INVALID_DATA);
 		return errors;
 	}
-
 }

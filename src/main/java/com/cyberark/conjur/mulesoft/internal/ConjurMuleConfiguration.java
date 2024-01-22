@@ -18,7 +18,7 @@ public class ConjurMuleConfiguration {
 	
 	/**
 	 * Set the unique ConfigId/TrasactionId per request
-	 * @param String configId
+	 * @param configId
 	 */
 	public void setConfigId(String configId) {
 		this.configId = configId;
@@ -29,11 +29,7 @@ public class ConjurMuleConfiguration {
 	 * Get the unique ConfigId/TrasactionId per request
 	 * @return String configId
 	 */
-
 	public String getConfigId() {
 		return configId;
 	}
-
-	
-
 }

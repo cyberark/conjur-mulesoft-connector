@@ -23,6 +23,4 @@ public interface AccessTokenProvider {
 	 * @throws ApiException
 	 */
 	public AccessToken getJwtAccessToken(ApiClient conjurClient, String jwtTokenPath, String authenticatorId);
-
-
 }

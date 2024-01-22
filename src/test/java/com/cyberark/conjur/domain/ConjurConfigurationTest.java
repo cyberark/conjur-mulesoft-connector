@@ -22,5 +22,4 @@ public class ConjurConfigurationTest {
 		conjurConfig.setConfigId(configId);
 		assertEquals(conjurConfig.getConfigId(),configId);
 	}
-
 }

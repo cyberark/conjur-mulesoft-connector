@@ -36,6 +36,7 @@ public class ConjurConstant {
 	/**
 	 * Not Found message.
 	 */
+
 	public static final String NOT_FOUND = "NotFound";
 	/**
 	 * Conjur connection is successful

@@ -19,9 +19,9 @@ public class ConjurServiceImpl implements ConjurService {
 
 	/**
 	 * Method to fetch secret based on the key provided
-	 * @param String conjurAccount
-	 * @param String variable_const "variable"
-	 * @param String variableId/key
+	 * @param account
+	 * @param variable_const "variable"
+	 * @param variableId
 	 * @return String secret for the key provided
 	 * @throws ApiException if key not found or data not found
 	 */
@@ -35,8 +35,8 @@ public class ConjurServiceImpl implements ConjurService {
 	}
 	/**
 	 * Method to fetch secret as batch based on the key(s) provided
-	 * @param String  comma separated encoded variableId's/key's
-	 * @param String conjurAccount 
+	 * @param variableIds  comma separated encoded variableId's/key's
+	 * @param account conjur account
 	 * @return Object secret for the keys provided as JSON
 	 * @throws ApiException if key not found or data not found
 	 */

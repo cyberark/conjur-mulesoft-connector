@@ -12,5 +12,5 @@ This repo is a **Certified** level project. It's a community contributed project
 
 ## Plugin Requirements & Configuration
 
-Please refer to official [documentation] (https://docs.cyberark.com/conjur-enterprise/latest/en/Content/HomeTilesLPs/LP-Tile4.htm)
+Please refer to official [documentation](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/HomeTilesLPs/LP-Tile4.htm)
 

@@ -12,7 +12,7 @@
 		to the exchange or cloudhub -->
 
 	<name>Conjur MuleSoft Custom Connector </name>
-	<description>Conjur Credentials Provider for Mule Soft Applications</description>
+	<description>Conjur Credentials Provider for MuleSoft Applications</description>
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>
@@ -47,14 +47,12 @@
 				<repository>
 					<id>conjurinc-releases</id>
 					<name>conjurinc-releases</name>
-					<url>
-						https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
+					<url>https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
 				</repository>
 				<snapshotRepository>
 					<id>conjurinc-snapshots</id>
 					<name>conjurinc-snapshots</name>
-					<url>
-						https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
+					<url>https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
 				</snapshotRepository>
 			</distributionManagement>
 		</profile>
@@ -68,8 +66,7 @@
 				</snapshotRepository>
 				<repository>
 					<id>ossrh</id>
-					<url>
-						https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 				</repository>
 			</distributionManagement>
 			<build>

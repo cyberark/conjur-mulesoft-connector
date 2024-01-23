@@ -4,13 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.0.3] - 2024-01-22
-- Javadoc Updates
-
-## [1.0.2] - 2024-01-21
-- Javadoc Updates
-
-## [1.0.1] - 2024-01-19
+## [1.0.4] - 2024-01-23
 - Add release and promotion capabilities
 
 ## [1.0.0] - 2024-01-12

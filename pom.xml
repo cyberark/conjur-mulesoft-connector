@@ -30,10 +30,8 @@
 	</developers>
 
 	<scm>
-		<connection>
-			scm:git:git://github.cyberng.com:Conjur-Enterprise/conjur-mulesoft-connector.git</connection>
-		<developerConnection>
-			scm:git:ssh://github.cyberng.com:Conjur-Enterprise/conjur-mulesoft-connector.git</developerConnection>
+		<connection>scm:git:git://github.cyberng.com:Conjur-Enterprise/conjur-mulesoft-connector.git</connection>
+		<developerConnection>scm:git:ssh://github.cyberng.com:Conjur-Enterprise/conjur-mulesoft-connector.git</developerConnection>
 		<url>https://github.com/cyberark/conjur-mulesoft-connector</url>
 	</scm>
 	<!-- <parent> <groupId>org.mule.extensions</groupId>

@@ -13,6 +13,7 @@
 
 	<name>Conjur MuleSoft Custom Connector </name>
 	<description>Conjur Credentials Provider for MuleSoft Applications</description>
+	<url>https://github.com/cyberark/conjur-mulesoft-connector</url>
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>

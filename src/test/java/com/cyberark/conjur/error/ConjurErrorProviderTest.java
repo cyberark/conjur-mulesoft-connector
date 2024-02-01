@@ -18,6 +18,7 @@ public class ConjurErrorProviderTest {
 		assertNotEquals(expectedObj, provider);
 	}
 	
+	@SuppressWarnings("unlikely-arg-type")
 	@Test
 	public void testErrorTypes()
 	{

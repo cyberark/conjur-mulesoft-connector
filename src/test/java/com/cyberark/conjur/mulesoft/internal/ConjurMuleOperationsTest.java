@@ -1,7 +1,6 @@
 package com.cyberark.conjur.mulesoft.internal;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -12,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.cyberark.conjur.core.ConjurConnection;
 import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.ApiException;
 
@@ -56,6 +54,7 @@ public class ConjurMuleOperationsTest {
 	@Test
 	public void testConstructor() {
 
+		@SuppressWarnings("unused")
 		Object expectedObj = new ConjurMuleOperations();
 
 	}
@@ -95,7 +94,7 @@ public class ConjurMuleOperationsTest {
 		String errorCode = "404";
 		String errorMsg = "UnAuthorized";
 		try {
-			String val = (String) connection.getValue();
+			assertNotNull(connection.getValue());
 
 		} catch (Exception e) {
 

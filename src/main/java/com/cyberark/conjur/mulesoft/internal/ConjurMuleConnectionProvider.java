@@ -21,7 +21,6 @@ import com.cyberark.conjur.core.ConjurConnection;
 import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.error.ConjurErrorProvider;
 import com.cyberark.conjur.error.ConjurErrorTypes;
-import com.cyberark.conjur.sdk.ApiException;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;
 import com.cyberark.conjur.service.ConjurService;
 import com.cyberark.conjur.service.ConjurServiceImpl;

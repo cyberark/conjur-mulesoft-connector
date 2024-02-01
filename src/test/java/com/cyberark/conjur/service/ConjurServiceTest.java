@@ -1,7 +1,5 @@
 package com.cyberark.conjur.service;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
@@ -9,8 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.cyberark.conjur.constant.ConjurConstant;
-import com.cyberark.conjur.core.ConjurConnection;
 import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.ApiException;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;

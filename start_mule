@@ -1,31 +1,60 @@
 #!/bin/bash
 
-set -x 
-set -e
+set -xe
 
-# CONJUR_USERNAME="host/data/shared_policy/v1/api_key_conjur"
-# CONJUR_API_KEY=${API_KEY}
-# CLOUD_URL=${CONJUR_CLOUD_URL}
+VARIABLE_PATH_1="data/mulesoft/db/password"
+VARIABLE_PATH_2="data/mulesoft/db/dbuserName"
+VARIABLE_PATH_3="data/mulesoft/db/dbpassWord"
+VARIABLE_PATH_4="data/mulesoft/db/key"
 
-# provide the identity or host id in the below format
-# if host_id is: "host/data/shared_policy/v1/api_key_conjur" then convert it to this format: "host%2Fdata%2Fshared_policy%2Fv1%2Fapi_key_conjur".
+# deploy conjur cloud
+function url_encode() {
+  printf '%s' "$1" | jq -sRr @uri
+}
 
-# docker build -t conjur-mule-image .
+function set_conjur_cloud_variable() {
+  local variable_name="$1"
+  local data="$2"
+  local encoded_variable_name
+  encoded_variable_name=$(url_encode "$variable_name")
+  curl -w "%{http_code}" -H "Authorization: Token token=\"$INFRAPOOL_CONJUR_AUTHN_TOKEN\"" \
+       -X POST --data-urlencode "${data}" "${INFRAPOOL_CONJUR_APPLIANCE_URL}/api/secrets/conjur/variable/${encoded_variable_name}"
+}
 
-HOST_IDENTITY="host%2Fdata%2Fshared_policy%2Fv1%2Fapi_key_conjur"
-VARIABLE_PATH="data/vault/ADO_Secret/ado_secret_apikey/username"
-VARIABLE_PATH_1="data/vault/ADO_Secret/ado_secret_apikey/password"
-VARIABLE_PATH_2="data/vault/ADO_Secret/ado_secret_apikey/address"
+function deploy_conjur_cloud() {
+  curl -w "%{http_code}" -H "Authorization: Token token=\"$INFRAPOOL_CONJUR_AUTHN_TOKEN\"" \
+       -X POST -d "$(cat ./cloud/root.yml)" "${INFRAPOOL_CONJUR_APPLIANCE_URL}/api/policies/conjur/policy/data"
 
-docker run \
-  -e "CONJUR_CLOUD_URL=${CONJUR_CLOUD_URL}" \
-  -e "CONJUR_ACCOUNT=${CONJUR_ACCOUNT}" \
-  -e "HOST_IDENTITY=${HOST_IDENTITY}" \
-  -e "CONJUR_AUTHN_API_KEY=${API_KEY}" \
-  -e "VARIABLE_PATH=${VARIABLE_PATH}" \
-  -e "VARIABLE_PATH_1${VARIABLE_PATH_1}" \
-  -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
-  --rm \
-  --entrypoint /bin/bash \
-  conjur-mule-image \
-  ./fetch_secrets.sh
+  set_conjur_cloud_variable "${VARIABLE_PATH_1}" "secret"
+  set_conjur_cloud_variable "${VARIABLE_PATH_2}" 123456
+  set_conjur_cloud_variable "${VARIABLE_PATH_3}" 7890123
+  set_conjur_cloud_variable "${VARIABLE_PATH_4}" 456789
+}
+
+function main() {
+  #conjur auth token file
+  echo "$INFRAPOOL_CONJUR_AUTHN_TOKEN" | base64 --decode > "./cloud/access_token"
+  #deploy conjur cloud
+  deploy_conjur_cloud
+  
+  docker run \
+    --volume "$(git rev-parse --show-toplevel):/repo" \
+    --volume "${PWD}/maven_cache":/root/.m2 \
+    --volume "${PWD}/cloud:/cloud" \
+    -e "CONJUR_CLOUD_URL=${INFRAPOOL_CONJUR_APPLIANCE_URL}/api" \
+    -e "CONJUR_ACCOUNT=conjur" \
+    -e "HOST_IDENTITY=${INFRAPOOL_CONJUR_AUTHN_LOGIN}" \
+    -e "CONJUR_SSL_CERT_FILE=/cloud/cloud_ca.pem" \
+    -e "CONJUR_AUTHN_TOKEN_FILE=/cloud/access_token" \
+    -e "VARIABLE_PATH_1=${VARIABLE_PATH_1}" \
+    -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
+    -e "VARIABLE_PATH_3=${VARIABLE_PATH_3}" \
+    -e "VARIABLE_PATH_4=${VARIABLE_PATH_4}" \
+    --workdir "/repo" \
+    --rm \
+    --entrypoint sh \
+    conjur-mule-image \
+    -ec 'mvn --batch-mode -f pom.xml jacoco:prepare-agent test jacoco:report'
+}
+
+main

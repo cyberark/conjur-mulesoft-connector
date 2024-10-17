@@ -64,7 +64,7 @@ docker run \
         mvn --batch-mode -f pom.xml clean compile package
 
 
-docker build --no-cache --build-arg maven_version=3.8.4 --build-arg java_version=8 -t conjur-mule-image .
+docker build --no-cache --build-arg maven_version=3.9.4 --build-arg java_version=17 -t conjur-mule-image .
 echo "list the docker images"
 docker images | grep conjur-mule-image
     

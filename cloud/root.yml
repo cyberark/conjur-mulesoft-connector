@@ -1,0 +1,22 @@
+---
+- !policy
+  id: mulesoft
+  annotations:
+    description: Policy for mulesoft
+  body:
+  - !host
+    id: mulesoft-connector
+    annotations:
+      description: connector for mulesoft
+      authn/api-key: true
+
+  - &variables
+    - !variable db/password
+    - !variable db/dbuserName
+    - !variable db/dbpassWord
+    - !variable db/key
+
+  - !permit
+    role: !host mulesoft-connector
+    privileges: [ read, execute ]
+    resource: *variables

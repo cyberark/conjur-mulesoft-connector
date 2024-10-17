@@ -4,17 +4,6 @@ set -x
 
 rm -rf .env
 
-get_container_logs(){
-  mkdir -p logs
-  docker compose ps --format json \
-    |jq -s -r  '.[]|.Name' \
-    |while read -r container; do \
-      docker logs "${container}" &> "logs/${container}.log"
-    done
-}
-
-trap get_container_logs EXIT
-
 docker compose down -v
 docker compose pull conjur pg proxy openssl
 docker compose build

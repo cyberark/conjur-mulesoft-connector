@@ -101,11 +101,13 @@ pipeline {
       }
     }
 
-    stage('docker image conjur-mule-image') {
+    stage('Conjur Mule test stage oss') {
       steps {
         script {
+          //  infrapool.agentSh './test'
+          //  infrapool.agentSh './start_oss'
           infrapool.agentSh './deploy_mule.sh'
-          infrapool.agentSh 'summon ./start_mule'
+          infrapool.agentSh './start_oss'
         }
       }
     }
@@ -114,17 +116,7 @@ pipeline {
       steps {
         script {
           //  infrapool.agentSh './test'
-          //  infrapool.agentSh './start_oss'
           infrapool.agentSh './start_enterprise'
-        }
-      }
-    }
-
-    stage('Conjur Mule test stage oss') {
-      steps {
-        script {
-          //  infrapool.agentSh './test'
-          infrapool.agentSh './start_oss'
         }
       }
       post {
@@ -134,6 +126,50 @@ pipeline {
             infrapool.agentStash name: 'surefire-reports-oss', includes: 'target/surefire-reports/*.xml'
             unstash 'surefire-reports-oss'
             junit 'target/surefire-reports/*.xml'
+          }
+        }
+      }
+    }
+
+    stage('Conjur Mule test stage cloud') {
+      stages {
+        stage('Create a Tenant') {
+          steps {
+            script {
+              TENANT = getConjurCloudTenant()
+            }
+          }
+        }
+        stage('Authenticate') {
+          steps {
+            script {
+              def id_token = getConjurCloudTenant.tokens(
+                infrapool: infrapool,
+                identity_url: "${TENANT.identity_information.idaptive_tenant_fqdn}",
+                username: "${TENANT.login_name}"
+              )
+
+              def conj_token = getConjurCloudTenant.tokens(
+                infrapool: infrapool,
+                conjur_url: "${TENANT.conjur_cloud_url}",
+                identity_token: "${id_token}"
+                )
+
+              env.conj_token = conj_token
+            }
+          }
+        }
+        stage('Run tests against Tenant') {
+          environment {
+            INFRAPOOL_CONJUR_APPLIANCE_URL="${TENANT.conjur_cloud_url}"
+            INFRAPOOL_CONJUR_AUTHN_LOGIN="${TENANT.login_name}"
+            INFRAPOOL_CONJUR_AUTHN_TOKEN="${env.conj_token}"
+            INFRAPOOL_TEST_CLOUD=true
+          }
+          steps {
+            script {
+              infrapool.agentSh './start_mule'
+            }
           }
         }
       }

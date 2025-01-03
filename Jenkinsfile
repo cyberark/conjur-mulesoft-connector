@@ -131,6 +131,27 @@ pipeline {
       }
     }
 
+    stage('Report Test Coverage to Codacy'){
+      steps {
+        script {
+          dir('target/site/jacoco'){
+            infrapool.agentStash name: 'jacoco', includes: 'jacaco.xml'
+            unstash 'jacoco'
+            codacy action: 'reportCoverage', filePath: "jacoco.xml"
+          }
+          infrapool.agentStash name: 'target-site-jacoco', includes: 'target/site/jacoco/*.xml'
+          unstash 'target-site-jacoco'
+          publishHTML (target : [allowMissing: false,
+            alwaysLinkToLastBuild: false,
+            keepAll: true,
+            reportDir: 'target/site/jacoco/',
+            reportFiles: 'index.html',
+            reportName: 'Coverage Report',
+            reportTitles: 'Mulesoft Code Coverage Jacoco report'])
+        }
+      }
+    }
+
     stage('Conjur Mule test stage cloud') {
       stages {
         stage('Create a Tenant') {

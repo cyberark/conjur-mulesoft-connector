@@ -216,7 +216,10 @@ pipeline {
   }
   post {
     always {
-      releaseInfraPoolAgent()
+      script {
+            deleteConjurCloudTenant("${TENANT.id}")
+      }
+      releaseInfraPoolAgent(".infrapool/release_agents")
     }
   }
 }

@@ -2,6 +2,8 @@
 
 set -xe
 
+TARGET="${1:-cloud}"
+declare -x API_KEY=''
 VARIABLE_PATH_1="data/mulesoft/db/password"
 VARIABLE_PATH_2="data/mulesoft/db/dbuserName"
 VARIABLE_PATH_3="data/mulesoft/db/dbpassWord"
@@ -31,30 +33,92 @@ function deploy_conjur_cloud() {
   set_conjur_cloud_variable "${VARIABLE_PATH_4}" 456789
 }
 
-function main() {
-  #conjur auth token file
-  echo "$INFRAPOOL_CONJUR_AUTHN_TOKEN" | base64 --decode > "./cloud/access_token"
-  #deploy conjur cloud
-  deploy_conjur_cloud
+function rotate_host_api_key() {
+  URL=$1
+  API_KEY=$(curl -k --request PUT --data "" \
+     -H "Authorization: Token token=\"$INFRAPOOL_CONJUR_AUTHN_TOKEN\"" \
+     ${URL}/authn/conjur/api_key?role=host:data%2Fmulesoft%2Fmulesoft-connector)
+}
+
+cleanup() {
+  echo "Cleaning up..."
   
-  docker run \
-    --volume "$(git rev-parse --show-toplevel):/repo" \
-    --volume "${PWD}/maven_cache":/root/.m2 \
-    --volume "${PWD}/cloud:/cloud" \
-    -e "CONJUR_CLOUD_URL=${INFRAPOOL_CONJUR_APPLIANCE_URL}/api" \
-    -e "CONJUR_ACCOUNT=conjur" \
-    -e "HOST_IDENTITY=${INFRAPOOL_CONJUR_AUTHN_LOGIN}" \
-    -e "CONJUR_SSL_CERT_FILE=/cloud/cloud_ca.pem" \
-    -e "CONJUR_AUTHN_TOKEN_FILE=/cloud/access_token" \
-    -e "VARIABLE_PATH_1=${VARIABLE_PATH_1}" \
-    -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
-    -e "VARIABLE_PATH_3=${VARIABLE_PATH_3}" \
-    -e "VARIABLE_PATH_4=${VARIABLE_PATH_4}" \
-    --workdir "/repo" \
-    --rm \
-    --entrypoint sh \
-    conjur-mule-image \
-    -ec 'mvn --batch-mode -f pom.xml jacoco:prepare-agent test jacoco:report'
+  if docker compose ps -q conjur > /dev/null; then
+    echo "Stopping and removing Conjur OSS container..."
+    docker compose rm --stop --force -v
+  fi
+
+  if docker compose -f docker-compose.enterprise.yml ps -q conjur-server > /dev/null; then
+    echo "Stopping and removing Conjur Enterprise container..."
+    pushd ./conjur-intro
+      ./bin/dap --stop
+    popd
+  fi
+}
+
+function main() {
+  cleanup
+  case "$TARGET" in
+  "cloud")
+    #disable the debugging
+    set +x
+    #conjur auth token file
+    echo "$INFRAPOOL_CONJUR_AUTHN_TOKEN" | base64 --decode > "./cloud/access_token"
+    #deploy conjur cloud
+    deploy_conjur_cloud
+    set -x
+    docker run \
+      --volume "$(git rev-parse --show-toplevel):/repo" \
+      --volume "${PWD}/maven_cache":/root/.m2 \
+      --volume "${PWD}/cloud:/cloud" \
+      -e "CONJUR_CLOUD_URL=${INFRAPOOL_CONJUR_APPLIANCE_URL}/api" \
+      -e "CONJUR_ACCOUNT=conjur" \
+      -e "HOST_IDENTITY=${INFRAPOOL_CONJUR_AUTHN_LOGIN}" \
+      -e "CONJUR_SSL_CERT_FILE=/cloud/cloud_ca.pem" \
+      -e "CONJUR_AUTHN_TOKEN_FILE=/cloud/access_token" \
+      -e "VARIABLE_PATH_1=${VARIABLE_PATH_1}" \
+      -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
+      -e "VARIABLE_PATH_3=${VARIABLE_PATH_3}" \
+      -e "VARIABLE_PATH_4=${VARIABLE_PATH_4}" \
+      --workdir "/repo" \
+      --rm \
+      --entrypoint sh \
+      conjur-mule-image \
+      -ec 'mvn --batch-mode -f pom.xml jacoco:prepare-agent test jacoco:report'
+    ;;
+  "edge")
+    # create a docker network
+    docker network create mulesoft_edge
+    #Add the network to the edge container
+    docker network connect mulesoft_edge edge-test
+    #disable the debugging
+    set +x
+    #Rotate API Key
+    rotate_host_api_key "https://localhost:443/api"
+    #Download the SSL certificate
+    openssl s_client -connect localhost:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM > "./cloud/conjur.pem"
+    set -x
+    docker run \
+      --network mulesoft_edge \
+      --volume "$(git rev-parse --show-toplevel):/repo" \
+      --volume "${PWD}/maven_cache":/root/.m2 \
+      --volume "${PWD}/cloud:/cloud" \
+      -e "CONJUR_CLOUD_URL=https://edge-test:8443/api" \
+      -e "CONJUR_ACCOUNT=conjur" \
+      -e "HOST_IDENTITY=host/data/mulesoft/mulesoft-connector" \
+      -e "CONJUR_SSL_CERT_FILE=/cloud/conjur.pem" \
+      -e "CONJUR_AUTHN_API_KEY=${API_KEY}" \
+      -e "VARIABLE_PATH_1=${VARIABLE_PATH_1}" \
+      -e "VARIABLE_PATH_2=${VARIABLE_PATH_2}" \
+      -e "VARIABLE_PATH_3=${VARIABLE_PATH_3}" \
+      -e "VARIABLE_PATH_4=${VARIABLE_PATH_4}" \
+      --workdir "/repo" \
+      --rm \
+      --entrypoint sh \
+      conjur-mule-image \
+      -ec 'mvn --batch-mode -f pom.xml jacoco:prepare-agent test jacoco:report'
+    ;;
+  esac
 }
 
 main

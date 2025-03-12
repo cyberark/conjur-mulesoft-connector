@@ -193,6 +193,42 @@ pipeline {
             }
           }
         }
+        stage('Get Edge Token') {
+          steps {
+            script {
+              def edge_token = getConjurCloudTenant.tokens(
+                infrapool: infrapool,
+                conjur_url: "${TENANT.conjur_cloud_url}",
+                edge_name: "${TENANT.conjur_edge_name}",
+                conjur_token: "${conj_token}"
+              )
+
+              def deploy_edge = getConjurCloudTenant.edge(
+                infrapool: infrapool,
+                conjur_url: "${TENANT.conjur_cloud_url}",
+                edge_name: "edge-test",
+                edge_token: "${edge_token}",
+                common_name: "edge-test",
+                subject_alt_names: "edge-test"
+              )
+              
+              env.edge_token = edge_token
+            }
+          }
+        }
+        stage('Run tests against Edge') {
+          environment {
+            INFRAPOOL_CONJUR_APPLIANCE_URL="${TENANT.conjur_cloud_url}"
+            INFRAPOOL_CONJUR_AUTHN_LOGIN="${TENANT.login_name}"
+            INFRAPOOL_CONJUR_AUTHN_TOKEN="${env.edge_token}"
+            INFRAPOOL_TEST_CLOUD=true
+          }
+          steps {
+            script {
+              infrapool.agentSh "./start_mule edge"
+            }
+          }
+        }
       }
     }
 

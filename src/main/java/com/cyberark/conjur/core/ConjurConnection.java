@@ -61,7 +61,13 @@ public class ConjurConnection {
 		client.setBasePath(conjurBasePath);
 		client.setUsername(conjurUserName);
 		client.setApiKey(conjurApiKey);
-
+		
+		// Setting up telemetry headers
+		client.setIntegrationName(config.getIntegrationName());
+		client.setIntegrationVersion(config.getIntegrationVersion());
+		client.setVendorName(config.getVendorName());
+		client.setIntegrationType(config.getIntegrationType());
+		
 		InputStream sslInputStream = null;
 
 		try {

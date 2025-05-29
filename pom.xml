@@ -60,19 +60,9 @@
 				</snapshotRepository>
 			</distributionManagement>
 		</profile>
-		<!--  Profile for deploying and releasing to Maven Central through OSSRH  -->
+		<!--  Profile for deploying and releasing to Maven Central through Central Portal  -->
 		<profile>
-			<id>ossrh</id>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-				<repository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-			</distributionManagement>
+			<id>central-portal</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -81,14 +71,13 @@
 						<version>${maven.site.plugin.version}</version>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.7</version>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>true</autoPublish>
 						</configuration>
 					</plugin>
 					<plugin>
@@ -423,12 +412,17 @@
 			<url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
 			<layout>default</layout>
 		</repository>
-	    <!-- OSSRH / Maven Central Repository -->
-	    <repository>
-	        <id>ossrh</id>
-	        <url>https://oss.sonatype.org/content/repositories/snapshots/</url> <!-- For SNAPSHOT artifacts -->
-	    </repository>
-		
+		<repository>
+  			<name>Central Portal Snapshots</name>
+  			<id>central-portal-snapshots</id>
+  			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+  			<releases>
+  			  	<enabled>false</enabled>
+  			</releases>
+  			<snapshots>
+  			  	<enabled>true</enabled>
+  			</snapshots>
+  		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>

@@ -6,3 +6,4 @@ conf/tls/nginx.*
 *.jar
 logs/
 maven_cache/
+/.idea/

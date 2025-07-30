@@ -1,10 +1,16 @@
 package com.cyberark.conjur.domain;
 
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.slf4j.Logger;
@@ -21,7 +27,7 @@ public class ConjurConfiguration {
 		// telemetry headers
 		private String integrationName = System.getenv().getOrDefault("INTEGRATION_NAME", "Mulesoft Connector");
 		private String integrationType = System.getenv().getOrDefault("INTEGRATION_TYPE", "cybr-secretsmanager-mulesoft");
-	    private String integrationVersion = getSDKVersion();  // Fetch from VERSION file
+	    private String integrationVersion = null;  // Fetch from VERSION file
 	    private String vendorName = System.getenv().getOrDefault("VENDOR_NAME", "MuleSoft");
 
 		/**
@@ -48,6 +54,9 @@ public class ConjurConfiguration {
 		 * @return the integration version.
 		 */
 		public String getIntegrationVersion() {
+			if (integrationVersion == null) {
+				integrationVersion = getSDKVersion();
+			}
 			return integrationVersion;
 		}
 
@@ -60,33 +69,33 @@ public class ConjurConfiguration {
 			return vendorName;
 		}
 
-	 // Method to get the SDK version from the VERSION file
+		// Method to get the SDK version from the CHANGELOG file   
 	    public static String getSDKVersion() {
-	        try {
-	            Path rootDir = Paths.get("");
-	            Path versionFile = rootDir.resolve("VERSION");
+	        final String fallbackVersion = "unset";
+	        String changelogFilePath = "/CHANGELOG.md";
+	        Pattern versionPattern = Pattern.compile("## \\[([\\d]+(?:\\.[\\d]+)*)\\]");
 
-	            if (Files.exists(versionFile)) {
-	                String version = new String(Files.readAllBytes(versionFile)).trim();
-	                if (version.isEmpty()) {
-	                    LOGGER.info("VERSION file is empty");
-	                    return "unknown";
-	                }
-
-	                // Remove the build number and snapshot
-	                String[] parts = version.split("-");
-	                String versionWithoutSnapshot = parts[0];
-	                LOGGER.info("SDK Version: " + versionWithoutSnapshot);
-
-	                return versionWithoutSnapshot;
-	            }
-	            return "unknown";
-
-	        } catch (IOException e) {
-	            LOGGER.error("Error reading VERSION file: " + e.getMessage(), e);
-	            return "unknown";  // Default version in case of error
+	        InputStream inputStream = ConjurConfiguration.class.getResourceAsStream(changelogFilePath);
+	        
+	        if (inputStream == null) {
+	            LOGGER.warn("CHANGELOG.md file not found.");
+	            return fallbackVersion;
 	        }
-	    }
+
+	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+	            String line;
+	            while ((line = reader.readLine()) != null) {
+	                Matcher matcher = versionPattern.matcher(line);
+	                if (matcher.find()) {
+	                    return matcher.group(1);
+	                }
+	            }
+	        } catch (IOException e) {
+	            LOGGER.warn("Error reading CHANGELOG.md from the JAR.", e);
+	        }
+
+	        return fallbackVersion;
+	    	}
 
 	@Parameter
 	private String configId;

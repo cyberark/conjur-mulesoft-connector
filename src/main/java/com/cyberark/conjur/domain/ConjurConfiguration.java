@@ -27,7 +27,7 @@ public class ConjurConfiguration {
 		// telemetry headers
 		private String integrationName = System.getenv().getOrDefault("INTEGRATION_NAME", "Mulesoft Connector");
 		private String integrationType = System.getenv().getOrDefault("INTEGRATION_TYPE", "cybr-secretsmanager-mulesoft");
-	    private String integrationVersion = null;  // Fetch from VERSION file
+	    private String integrationVersion = null;  // Fetch from CHANGELOG file
 	    private String vendorName = System.getenv().getOrDefault("VENDOR_NAME", "MuleSoft");
 
 		/**

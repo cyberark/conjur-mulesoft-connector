@@ -1,21 +1,29 @@
-ARG java_version
-
-# Use an OpenJDK image as the base
-FROM openjdk:${java_version}-slim
+# Use Alpine image as the base
+FROM alpine:3.19
 
 ARG maven_version
 
 # Install required packages
-RUN apt-get update -y && \
-    apt-get install -y curl unzip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    openjdk17-jdk \
+    curl \
+    unzip \
+    ca-certificates \
+    yq
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Download and extract Maven
-RUN curl -o /tmp/maven.tar.gz https://downloads.apache.org/maven/maven-3/${maven_version}/binaries/apache-maven-${maven_version}-bin.tar.gz && \
-    mkdir -p /opt/maven && \
-    tar -xzf /tmp/maven.tar.gz -C /opt/maven --strip-components=1 && \
-    rm /tmp/maven.tar.gz
+RUN set -eux; \
+  MAVEN_TGZ="apache-maven-${maven_version}-bin.tar.gz"; \
+  BASE_URL="https://archive.apache.org/dist/maven/maven-3/${maven_version}/binaries"; \
+  curl -fsSL "${BASE_URL}/${MAVEN_TGZ}" -o /tmp/maven.tar.gz; \
+  curl -fsSL "${BASE_URL}/${MAVEN_TGZ}.sha512" -o /tmp/maven.tar.gz.sha512; \
+  echo "$(cat /tmp/maven.tar.gz.sha512)  /tmp/maven.tar.gz" | sha512sum -c -; \
+  mkdir -p /opt/maven; \
+  tar -xzf /tmp/maven.tar.gz -C /opt/maven --strip-components=1; \
+  rm -f /tmp/maven.tar.gz /tmp/maven.tar.gz.sha512
 
 # Set Maven environment variables
 ENV MAVEN_HOME=/opt/maven

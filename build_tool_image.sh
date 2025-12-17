@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Build tools image
-#FROM maven:${maven_version}-openjdk-${java_version}-slim
+#FROM Alpine 3.19
 docker build \
     --build-arg maven_version=3.9.11 \
     --build-arg java_version=17 \

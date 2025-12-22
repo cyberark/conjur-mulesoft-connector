@@ -3,9 +3,9 @@
 set -euo pipefail
 
 # Build tools image
-#FROM Alpine 3.19
-docker build \
-    --build-arg maven_version=3.9.11 \
+#FROM eclipse-temurin:${java_version}-jdk-alpine-3.23
+docker build --platform=linux/amd64 \
+    --build-arg maven_version=3.9.11-r0 \
     --build-arg java_version=17 \
     -t tools \
     -f tools.Dockerfile \

@@ -163,8 +163,7 @@
 		<muleJavaEeBomVersion>4.6.0</muleJavaEeBomVersion>
 		<munit.extensions.maven.plugin.version>1.2.0</munit.extensions.maven.plugin.version>
 		<munit.version>3.1.0</munit.version>
-
-
+		<mavenCompilerVersion>3.11.0</mavenCompilerVersion>
 	</properties>
 	<dependencies>
     <dependency>
@@ -454,7 +453,7 @@
 			<id>mulesoft-releases</id>
 			<name>mulesoft release repository</name>
 			<layout>default</layout>
-			<url>http://repository.mulesoft.org/releases/</url>
+			<url>https://repository.mulesoft.org/releases/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -463,7 +462,7 @@
 			<id>mulesoft-snapshots</id>
 			<name>mulesoft snapshots repository</name>
 			<layout>default</layout>
-			<url>http://repository.mulesoft.org/snapshots/</url>
+			<url>https://repository.mulesoft.org/snapshots/</url>
 		</pluginRepository>
 		<pluginRepository>
 			<id>mule-plugin</id>

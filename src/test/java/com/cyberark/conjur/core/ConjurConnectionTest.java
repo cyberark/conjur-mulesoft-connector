@@ -1,135 +1,73 @@
-
 package com.cyberark.conjur.core;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockedStatic;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.cyberark.conjur.authentication.AccessTokenProvider;
-import com.cyberark.conjur.authentication.AccessTokenProviderImpl;
-import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.ApiClient;
-import com.cyberark.conjur.sdk.ApiException;
+import com.cyberark.conjur.sdk.endpoint.SecretsApi;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class ConjurConnectionTest {
 
-	String conjurAccount;
-	String conjurAuthnLogin;
-	String conjurApplianceUrl;
-	String conjurApiKey;
-	String conjurSslCert;
-	String conjurCert;
-	AccessTokenProviderImpl accessTokenProvider;
-	//@Mock
-	ApiClient apiClient = new ApiClient();
-	AccessTokenProvider provider = new AccessTokenProviderImpl();
+    @Mock
+    private SecretsApi secretsApi;
 
-	// @InjectMocks
-	public ConjurConfiguration conjurConfig = new ConjurConfiguration();
+    @Mock
+    private ApiClient apiClient;
 
-	@Before
-	public void setup() {
-		
-		conjurAccount = System.getenv().getOrDefault("CONJUR_ACCOUNT", null);
-		conjurApplianceUrl = System.getenv().getOrDefault("CONJUR_APPLIANCE_URL", null);
-		conjurAuthnLogin = System.getenv().getOrDefault("CONJUR_AUTHN_LOGIN", null);
-		conjurApiKey = System.getenv().getOrDefault("CONJUR_AUTHN_API_KEY", null);
-		conjurSslCert = System.getenv().getOrDefault("CONJUR_SSL_CERTIFICATE", null);
-		conjurCert = System.getenv().getOrDefault("CONJUR_CERT_FILE", null);
+    @Test
+    public void getAccountReturnsAccountWhenApiClientExists() {
+        var expected = "testAccount";
+        when(secretsApi.getApiClient()).thenReturn(apiClient);
+        when(apiClient.getAccount()).thenReturn(expected);
 
-		conjurConfig.setConjurAccount(conjurAccount);
-		conjurConfig.setConjurApplianceUrl(conjurApplianceUrl);
-		conjurConfig.setConjurAuthnLogin(conjurAuthnLogin);
-		conjurConfig.setConjurApiKey(conjurApiKey);
-		conjurConfig.setConjurSslCertificate(conjurSslCert);
-		conjurConfig.setConjurCertFile(conjurCert);
+        var actual = ConjurConnection.getAccount(secretsApi);
 
-		accessTokenProvider = mock(AccessTokenProviderImpl.class);
-
-	}
-
-	@Test
-	public void testConstructor() {
-		Object expectedObj = new ConjurConnection();
-		assertNotEquals(expectedObj, ConjurConnection.class);
-
-	}
-
-	@Test
-	public void testConnection() throws ApiException {
-
-		AccessTokenProvider provider = new AccessTokenProviderImpl();
-		apiClient = new ApiClient();
-
-		apiClient.setAccount(conjurAccount);
-		apiClient.setApiKey(conjurApiKey);
-		apiClient.setBasePath(conjurApplianceUrl);
-		apiClient.setUsername(conjurAuthnLogin);
-
-	}
-
-	@Test
-public void testobfuscateString() {
-    String obfuscatedString = ConjurConnection.obfuscateString(conjurAccount);
-}
-
-
-	@Test
-	public void testApiKey() throws ApiException {
-		boolean condition = false;
-		apiClient = mock(ApiClient.class);
-
-		apiClient.setAccount(conjurConfig.getConjurAccount());
-		apiClient.setApiKey(conjurConfig.getConjurApiKey());
-		apiClient.setBasePath(conjurConfig.getConjurApplianceUrl());
-		apiClient.setUsername(conjurConfig.getConjurAuthnLogin());
-
-			condition = true;
-
-		assertTrue(condition);
-	}
-@Test
-public void testAccessTokenNull() throws ApiException {
-    apiClient = mock(ApiClient.class);
-
-    apiClient.setAccount(conjurConfig.getConjurAccount());
-    apiClient.setApiKey(conjurConfig.getConjurApiKey());
-    apiClient.setBasePath(conjurConfig.getConjurApplianceUrl());
-    apiClient.setUsername(conjurConfig.getConjurAuthnLogin());
-
-    // Get the access token and assert that it is null
-    assertNull("Access token should be null", provider.getNewAccessToken(apiClient));
-}
-
-
-	@Test
-public void testNullConnection() {
-    try (MockedStatic<ConjurConnection> getConnectionMockStatic = mockStatic(ConjurConnection.class)) {
-        getConnectionMockStatic.when(() -> ConjurConnection.getConnection(conjurConfig)).thenReturn(null);
-
+        assertEquals(expected, actual);
     }
 
-    try (MockedStatic<ConjurConnection> getConnectionMockStatic = mockStatic(ConjurConnection.class)) {
-        getConnectionMockStatic.when(() -> ConjurConnection.getConnection(conjurConfig))
-                .thenThrow(new ApiException("Conjur Connection error"));
+    @Test
+    public void getAccountReturnsAccountWhenApiClientDoesNotExist() {
+        // In this scenario, the SecretsApi does not have an ApiClient.
+        // The getAccount() method should then fallback to the CONJUR_ACCOUNT environment variable.
+        var expected = System.getenv("CONJUR_ACCOUNT");
+        when(secretsApi.getApiClient()).thenReturn(null);
 
+        var actual = ConjurConnection.getAccount(secretsApi);
+
+        assertEquals(expected, actual);
     }
-}
 
+    @Test
+    public void obfuscateStringLongStringObfuscatesMiddle() {
+        var input = "hell";
+        var expected = "h*******l";
 
-	@Test
-	public void testConjurAccount() {
-		assertNotEquals("", apiClient.getAccount());
-	}
+        String actual = ConjurConnection.obfuscateString(input);
 
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void obfuscateStringShortStringReturnsSame() {
+        var expected = "tt";
+
+        var actual = ConjurConnection.obfuscateString(expected);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void obfuscateStringEmptyStringReturnsEmpty() {
+        var expected = "";
+
+        var actual = ConjurConnection.obfuscateString(expected);
+
+        assertEquals(expected, actual);
+    }
 }

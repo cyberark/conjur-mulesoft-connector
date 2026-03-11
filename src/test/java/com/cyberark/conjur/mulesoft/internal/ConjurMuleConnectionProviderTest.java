@@ -1,264 +1,173 @@
 package com.cyberark.conjur.mulesoft.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.net.UnknownHostException;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import com.cyberark.conjur.constant.ConjurConstant;
 import com.cyberark.conjur.core.ConjurConnection;
 import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.ApiClient;
-import com.cyberark.conjur.sdk.ApiException;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;
 import com.cyberark.conjur.service.ConjurServiceImpl;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mule.runtime.extension.api.exception.ModuleException;
+
+import java.lang.reflect.Field;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConjurMuleConnectionProviderTest {
 
-	@InjectMocks
-	public ConjurMuleConnectionProvider connectionProvider;
+    private ConjurMuleConnectionProvider provider;
+    private ConjurConfiguration config;
 
-	public SecretsApi secretsApi;
+    @Mock
+    private ConjurServiceImpl mockService;
 
-	public ApiClient apiClient;
+    @Mock
+    private SecretsApi mockSecretsApi;
 
-	public ConjurServiceImpl conjurService;
+    @Mock
+    private ApiClient mockApiClient;
 
-	@InjectMocks
-	public ConjurConfiguration conjurConfig;
+    private static final String ACCOUNT = "myAccount";
+    private static final String URL = "http://test.com";
+    private static final String LOGIN = "admin";
+    private static final String API_KEY = "myApiKey";
+    private static final String SSL_CERT = "sslCert";
+    private static final String CERT_FILE = "cert";
 
-	String conjurAccount;
-	String conjurAuthnLogin;
-	String conjurApplianceUrl;
-	String conjurApiKey;
-	String conjurSslCert;
-	String conjurCert;
+    @Before
+    public void setUp() throws Exception {
+        config = new ConjurConfiguration();
+        config.setConjurAccount(ACCOUNT);
+        config.setConjurApplianceUrl(URL);
+        config.setConjurAuthnLogin(LOGIN);
+        config.setConjurApiKey(API_KEY);
+        config.setConjurSslCertificate(SSL_CERT);
+        config.setConjurCertFile(CERT_FILE);
 
-	String key = System.getenv().getOrDefault("KEY_VARIABLES", "");
+        provider = new ConjurMuleConnectionProvider();
 
-	@SuppressWarnings("deprecation")
-	@Before
-	public void setUp() throws UnknownHostException {
-		mock(ConjurConfiguration.class);
-		MockitoAnnotations.initMocks(this);
-		apiClient = mock(ApiClient.class);
-		conjurService = mock(ConjurServiceImpl.class);
-		secretsApi = mock(SecretsApi.class);
+        setPrivateField(provider, "config", config);
+        setPrivateField(provider, "conjurService", mockService);
+        setPrivateField(provider, "secretsApi", mockSecretsApi);
+        setPrivateField(provider, "conjurAccount", ACCOUNT);
+        setPrivateField(provider, "conjurApplianceUrl", URL);
+        setPrivateField(provider, "conjurAuthnLogin", LOGIN);
+        setPrivateField(provider, "conjurApiKey", API_KEY);
+        setPrivateField(provider, "conjurSslCertificate", SSL_CERT);
+        setPrivateField(provider, "conjurCertFile", CERT_FILE);
+    }
 
-		conjurAccount = System.getenv().getOrDefault("CONJUR_ACCOUNT", null);
-		conjurApplianceUrl = System.getenv().getOrDefault("CONJUR_APPLIANCE_URL", null);
-		conjurAuthnLogin = System.getenv().getOrDefault("CONJUR_AUTHN_LOGIN", null);
-		conjurApiKey = System.getenv().getOrDefault("CONJUR_AUTHN_API_KEY", null);
-		conjurSslCert =System.getenv().getOrDefault("CONJUR_SSL_CERTIFICATE",null);
-		conjurCert =System.getenv().getOrDefault("CONJUR_CERT_FILE",null);
+    @Test
+    public void testConnectSingleSecret() throws Exception {
+        setPrivateField(provider, "key", "db/password");
 
-	
-		conjurConfig.setConjurAccount(conjurAccount);
-		conjurConfig.setConjurApplianceUrl(conjurApplianceUrl);
-		conjurConfig.setConjurAuthnLogin(conjurAuthnLogin);
-		conjurConfig.setConjurApiKey(conjurApiKey);
-		conjurConfig.setConjurSslCertificate(conjurSslCert);
-		conjurConfig.setConjurCertFile(conjurCert);
+        try (MockedStatic<ConjurConnection> conjurStatic = mockStatic(ConjurConnection.class)) {
+            conjurStatic.when(() -> ConjurConnection.getConnection(config)).thenReturn(mockApiClient);
+            conjurStatic.when(() -> ConjurConnection.getAccount(mockSecretsApi)).thenReturn(ACCOUNT);
 
-	}
+            when(mockService.getSecret(ACCOUNT, ConjurConstant.CONJUR_KIND, "db/password"))
+                    .thenReturn("mySecret");
 
-	@Test
-	public void testConstructor() {
-		Object expectedObj = new ConjurMuleConnectionProvider();
-		assertNotEquals(expectedObj, connectionProvider);
-	}
+            ConjurMuleConnection connection = provider.connect();
 
-	@Test
-	public void testConnect() throws Exception
-	{
-		ConjurMuleConnectionProvider provider = new ConjurMuleConnectionProvider();
-		//assertThrows(Exception.class,()->provider.connect());
-		//assertFalse(provider.isValidParameters(conjurAccount, conjurApplianceUrl, conjurAuthnLogin, conjurApiKey, conjurSslCert));
-		
-		//ConjurConnection.getConnection(conjurConfig);
-		//assertEquals(conjurAccount,ConjurConnection.getAccount(secretsApi));
-		
-	}
-	
-	@Test
-	public void testIsValidParams()
-	{
-		ConjurMuleConnectionProvider provider = new ConjurMuleConnectionProvider();
-		assertThrows(Exception.class,()->provider.isValidParameters("", conjurApplianceUrl,conjurAuthnLogin,conjurApiKey, conjurSslCert));
-		assertThrows(Exception.class,()->provider.isValidParameters(conjurAccount,"" ,conjurAuthnLogin,conjurApiKey, conjurSslCert));
-		assertThrows(Exception.class,()->provider.isValidParameters(conjurAccount,conjurApplianceUrl,"",conjurApiKey, conjurSslCert));
-		assertThrows(Exception.class,()->provider.isValidParameters(conjurAccount,conjurApplianceUrl,conjurAuthnLogin,"", conjurSslCert));
-		assertThrows(Exception.class,()->provider.isValidParameters(conjurAccount,conjurApplianceUrl,conjurAuthnLogin,conjurApiKey, ""));
-		
-		
-	}
+            assertNotNull(connection);
+            assertEquals("mySecret", connection.getValue());
+        }
+    }
 
-	@Test
-	public void conjurConnection() throws ApiException {
+    @Test
+    public void testConnectBatchSecret() throws Exception {
+        setPrivateField(provider, "key", "db/password,db/username");
 
-		try (MockedStatic<ConjurConnection> getConnectionMockStatic = mockStatic(ConjurConnection.class)) {
+        try (MockedStatic<ConjurConnection> conjurStatic = mockStatic(ConjurConnection.class)) {
+            conjurStatic.when(() -> ConjurConnection.getConnection(config)).thenReturn(mockApiClient);
+            conjurStatic.when(() -> ConjurConnection.getAccount(mockSecretsApi)).thenReturn(ACCOUNT);
 
-			getConnectionMockStatic.when(() -> ConjurConnection.getConnection(conjurConfig)).thenReturn(apiClient);
+            when(mockService.getBatchSecrets("db/password,db/username", ACCOUNT))
+                    .thenReturn("secret1,secret2");
 
-			assertEquals(apiClient, ConjurConnection.getConnection(conjurConfig));
-		}
-	}
+            ConjurMuleConnection connection = provider.connect();
 
-	@Test
-	public void conjurConnectionFailure() throws ApiException {
-		try (MockedStatic<ConjurConnection> getConnectionMockStatic = mockStatic(ConjurConnection.class)) {
-			getConnectionMockStatic.when(() -> ConjurConnection.getConnection(conjurConfig)).thenReturn(null);
+            assertNotNull(connection);
+            assertEquals("secret1,secret2", connection.getValue());
+        }
+    }
 
-			assertNull(ConjurConnection.getConnection(conjurConfig));
-		}
-		try (MockedStatic<ConjurConnection> getConnectionMockStatic = mockStatic(ConjurConnection.class)) {
-			getConnectionMockStatic.when(() -> ConjurConnection.getConnection(conjurConfig))
-					.thenThrow(new ApiException("Conjur Connection error"));
-			assertThrows(ApiException.class, () -> ConjurConnection.getConnection(conjurConfig));
-		}
-	}
+    @Test
+    public void testConnectThrowsModuleException() throws Exception {
+        setPrivateField(provider, "key", "db/password");
 
-	@Test
-	public void checkConjurAccount() {
-		conjurConfig = mock(ConjurConfiguration.class);
-		when(conjurConfig.getConjurAccount()).thenReturn("myConjurAccount");
-		assertEquals("myConjurAccount", conjurConfig.getConjurAccount());
+        try (MockedStatic<ConjurConnection> conjurStatic = mockStatic(ConjurConnection.class)) {
+            conjurStatic.when(() -> ConjurConnection.getConnection(config))
+                    .thenThrow(new RuntimeException("fail"));
 
-	}
+            assertThrows(ModuleException.class, () -> {
+                provider.connect();
+            });
+        }
+    }
 
-	@Test
-	public void checkConjurAccountNullOrEmpty() {
-		ConjurConfiguration conjurConfig = mock(ConjurConfiguration.class);
-		when(conjurConfig.getConjurAccount()).thenReturn(null);
-		String actualAccount = conjurConfig.getConjurAccount();
-		assertTrue(actualAccount == null || actualAccount.isEmpty());
-	}
+    @Test
+    public void testDisconnectCallsInvalidate() {
+        ConjurMuleConnection mockConnection = mock(ConjurMuleConnection.class);
 
-	@Test
-	public void getAccountValidApiClient() {
+        provider.disconnect(mockConnection);
 
-		when(secretsApi.getApiClient()).thenReturn(apiClient);
+        verify(mockConnection).invalidate();
+    }
 
-		when(apiClient.getAccount()).thenReturn("myConjurAccount");
+    @Test
+    public void testValidateReturnsSuccess() {
+        var mockConnection = mock(ConjurMuleConnection.class);
+        var result = provider.validate(mockConnection);
+        assertNotNull(result);
+        assertTrue(result.isValid());
+    }
 
-		String result = ConjurConnection.getAccount(secretsApi);
+    @Test
+    public void testIsValidParametersThrowsException() {
+        // Empty account
+        var ex1 = assertThrows(ModuleException.class, () ->
+                provider.isValidParameters("", URL, LOGIN, API_KEY, SSL_CERT));
+        assertTrue(ex1.getMessage().contains(ConjurConstant.INVALID_ACCOUNT));
 
-		verify(secretsApi, times(1)).getApiClient();
+        // Empty URL
+        var ex2 = assertThrows(ModuleException.class, () ->
+                provider.isValidParameters(ACCOUNT, "", LOGIN, API_KEY, SSL_CERT));
+        assertTrue(ex2.getMessage().contains(ConjurConstant.INVALID_BASEURL));
 
-		verify(apiClient, times(1)).getAccount();
+        // Empty login
+        var ex3 = assertThrows(ModuleException.class, () ->
+                provider.isValidParameters(ACCOUNT, URL, "", API_KEY, SSL_CERT));
+        assertTrue(ex3.getMessage().contains(ConjurConstant.INVALID_USERNAME));
 
-		assertEquals("myConjurAccount", result);
+        // Empty API key
+        var ex4 = assertThrows(ModuleException.class, () ->
+                provider.isValidParameters(ACCOUNT, URL, LOGIN, "", SSL_CERT));
+        assertTrue(ex4.getMessage().contains(ConjurConstant.INVALID_APIKEY));
 
-	}
+        // Empty SSL certificate
+        var ex5 = assertThrows(ModuleException.class, () ->
+                provider.isValidParameters(ACCOUNT, URL, LOGIN, API_KEY, ""));
+        assertTrue(ex5.getMessage().contains(ConjurConstant.INVALID_SSLCERT));
+    }
 
-	@Test
-	public void getAccountInvalidApiClient() {
-		when(secretsApi.getApiClient()).thenReturn(apiClient);
-		when(apiClient.getAccount()).thenReturn(null); // Simulate an unexpected response
-		String result = ConjurConnection.getAccount(secretsApi);
-		verify(secretsApi, times(1)).getApiClient();
-		verify(apiClient, times(1)).getAccount();
-		assertNotEquals("myConjurAccount", result);
-	}
+    @Test
+    public void testIsValidParametersAllValidReturnsFalse() throws Exception {
+        boolean result = provider.isValidParameters(ACCOUNT, URL, LOGIN, API_KEY, SSL_CERT);
+        assertFalse(result);
+    }
 
-	@Test
-	public void getSecretVal() throws ApiException {
-
-		String[] keys = key.split(",");
-
-		if (keys.length > 1) {
-
-			try (MockedStatic<Object> getBatchSecretsMockStatic = mockStatic(Object.class)) {
-
-				Object batchSecrets = conjurService.getBatchSecrets(key, conjurConfig.getConjurAccount());
-
-				mock(ConjurServiceImpl.class);
-
-				getBatchSecretsMockStatic
-						.when(() -> conjurService.getBatchSecrets(key, conjurConfig.getConjurAccount()))
-						.thenReturn(batchSecrets);
-				assertEquals(conjurService.getBatchSecrets(key, conjurConfig.getConjurAccount()), batchSecrets);
-			}
-
-		} else {
-
-			try (MockedStatic<Object> getSecretValMockStatic = mockStatic(Object.class)) {
-
-				Object secretValue = conjurService.getSecret(conjurConfig.getConjurAccount(),
-						ConjurConstant.CONJUR_KIND, key);
-
-				mock(ConjurServiceImpl.class);
-
-				getSecretValMockStatic.when(
-						() -> conjurService.getSecret(conjurConfig.getConjurAccount(), ConjurConstant.CONJUR_KIND, key))
-						.thenReturn(secretValue);
-
-				assertEquals(conjurService.getSecret(conjurConfig.getConjurAccount(), ConjurConstant.CONJUR_KIND, key),
-						secretValue);
-			}
-
-		}
-
-	}
-
-	@Test
-	public void getSecretValFailure() throws ApiException {
-		String[] keys = key.split(",");
-
-		if (keys.length > 1) {
-			try (MockedStatic<Object> getBatchSecretsMockStatic = mockStatic(Object.class)) {
-				getBatchSecretsMockStatic
-						.when(() -> conjurService.getBatchSecrets(key, conjurConfig.getConjurAccount()))
-						.thenThrow(new ApiException("Invalid keys"));
-				assertThrows(ApiException.class,
-						() -> conjurService.getBatchSecrets(key, conjurConfig.getConjurAccount()));
-			}
-		} else {
-			try (MockedStatic<Object> getSecretValMockStatic = mockStatic(Object.class)) {
-
-				getSecretValMockStatic.when(
-						() -> conjurService.getSecret(conjurConfig.getConjurAccount(), ConjurConstant.CONJUR_KIND, key))
-						.thenThrow(new ApiException("Invalid key"));
-
-				assertThrows(ApiException.class, () -> conjurService.getSecret(conjurConfig.getConjurAccount(),
-						ConjurConstant.CONJUR_KIND, key));
-			}
-		}
-	}
-
-	@Test
-	public void conjurDisconnect() {
-
-		ConjurMuleConnection connection = mock(ConjurMuleConnection.class);
-
-		connectionProvider.disconnect(connection);
-
-		verify(connection, times(1)).invalidate();
-	}
-	
-	@Test
-	public void testValidate()
-	{
-		ConjurMuleConnection connection = mock(ConjurMuleConnection.class);
-		assertNotNull(connectionProvider.validate(connection));
-	}
-
+    private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
+    }
 }

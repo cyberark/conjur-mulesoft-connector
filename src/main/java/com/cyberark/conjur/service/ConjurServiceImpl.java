@@ -14,8 +14,17 @@ public class ConjurServiceImpl implements ConjurService {
 
 	private final Logger LOGGER = LoggerFactory.getLogger(ConjurServiceImpl.class);
 
-	SecretsApi secretsApi = new SecretsApi();
-	Object secrets = null;
+	private final SecretsApi secretsApi;
+    Object secrets = null;
+
+	//No-arg constructor required by Mule extension
+	public ConjurServiceImpl() {
+		this(new SecretsApi());
+	}
+
+	public ConjurServiceImpl(SecretsApi secretsApi) {
+		this.secretsApi = secretsApi;
+	}
 
 	/**
 	 * Method to fetch secret based on the key provided
@@ -29,8 +38,8 @@ public class ConjurServiceImpl implements ConjurService {
 	public Object getSecret(String account, String variable_const, String variableId) throws ApiException {
 
 		LOGGER.info("Getting secret for account: {}", account);
-		secrets = secretsApi.getSecret(account, "variable", variableId);
-		LOGGER.info("Secret retrieved successfully.");
+        secrets = secretsApi.getSecret(account, "variable", variableId);
+        LOGGER.info("Secret retrieved successfully.");
 		return secrets;
 	}
 	/**
@@ -62,7 +71,7 @@ public class ConjurServiceImpl implements ConjurService {
 			}
 		}
 
-		secrets = secretsApi.getSecrets(encodeKey.toString());
+        secrets = secretsApi.getSecrets(encodeKey.toString());
 		LOGGER.info("Secrets retrieved successfully.");
 		return secrets;
 	}

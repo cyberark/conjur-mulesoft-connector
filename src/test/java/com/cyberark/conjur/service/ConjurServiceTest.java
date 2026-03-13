@@ -10,14 +10,11 @@ import org.mockito.Mock;
 
 import com.cyberark.conjur.sdk.ApiException;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ConjurServiceImpl.class})
+@RunWith(MockitoJUnitRunner.class)
 public class ConjurServiceTest {
 
     @Mock
@@ -29,17 +26,16 @@ public class ConjurServiceTest {
     private final String VARIABLE_CONST = "variable";
 
     @Before
-    public void setUp() throws Exception {
-        PowerMockito.whenNew(SecretsApi.class).withNoArguments().thenReturn(mockSecretsApi);
-        conjurService = new ConjurServiceImpl();
+    public void setUp() {
+        conjurService = new ConjurServiceImpl(mockSecretsApi);
     }
 
     @Test
     public void getSecretReturnsSecret() throws ApiException {
         var variableId = "mySecret";
         var expectedSecret = "Secret";
-        when(mockSecretsApi.getSecret(ACCOUNT, VARIABLE_CONST, variableId)).thenReturn(expectedSecret);
-
+        when(mockSecretsApi.getSecret(ACCOUNT, VARIABLE_CONST, variableId))
+                .thenReturn(expectedSecret);
         var result = conjurService.getSecret(ACCOUNT, VARIABLE_CONST, variableId);
 
         assertEquals(expectedSecret, result);

@@ -1,15 +1,12 @@
 package com.cyberark.conjur.authentication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockedStatic;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.cyberark.conjur.sdk.AccessToken;
@@ -19,77 +16,45 @@ import com.cyberark.conjur.sdk.ApiException;
 @RunWith(MockitoJUnitRunner.class)
 public class AccessTokenProviderTest {
 
-	//@Mock
-	ApiClient apiClient = new ApiClient();
+    @Mock
+    private ApiClient apiClient;
 
-	String conjurAccount;
-	String conjurAuthnLogin;
-	String conjurApplianceUrl;
-	String conjurApiKey;
-	String conjurSslCert;
-	String conjurCert;
-	AccessTokenProviderImpl accessTokenProvider = null;
-	AccessTokenProvider provider = new AccessTokenProviderImpl();
+    @Mock
+    private AccessToken accessToken;
 
-	@Before
-	public void setup() {
+    @InjectMocks
+    private AccessTokenProviderImpl accessTokenProvider;
 
-		conjurAccount = System.getenv().getOrDefault("CONJUR_ACCOUNT", null);
-		conjurApplianceUrl = System.getenv().getOrDefault("CONJUR_APPLIANCE_URL", null);
-		conjurAuthnLogin = System.getenv().getOrDefault("CONJUR_AUTHN_LOGIN", null);
-		conjurApiKey = System.getenv().getOrDefault("CONJUR_AUTHN_API_KEY", null);
-		conjurSslCert = System.getenv().getOrDefault("CONJUR_SSL_CERTIFICATE", null);
-		conjurCert = System.getenv().getOrDefault("CONJUR_CERT_FILE", null);
+    @Test
+    public void getNewAccessTokenReturnsToken() throws ApiException {
+        when(apiClient.getNewAccessToken()).thenReturn(accessToken);
 
-		accessTokenProvider = mock(AccessTokenProviderImpl.class);
-		apiClient = mock(ApiClient.class);
+        var result = accessTokenProvider.getNewAccessToken(apiClient);
 
-		apiClient.setAccount(conjurAccount);
-		apiClient.setApiKey(conjurApiKey);
-		apiClient.setBasePath(conjurApplianceUrl);
-		apiClient.setUsername(conjurAuthnLogin);
+        assertEquals(accessToken, result);
+        verify(apiClient).getNewAccessToken();
+    }
 
-	}
+    @Test
+    public void getNewAccessTokenReturnsException() {
+        when(apiClient.getNewAccessToken()).thenThrow(new RuntimeException("API error"));
 
-	@Test
-	public void testConstructor() {
+        assertThrows(ApiException.class, () ->
+                accessTokenProvider.getNewAccessToken(apiClient)
+        );
 
-		Object expectedObj = new AccessTokenProviderImpl();
-		assertNotEquals(expectedObj, provider);
+        verify(apiClient).getNewAccessToken();
+    }
 
-	}
+    @Test
+//    @DisplayName("getJwtAccessToken should return null because it is not implemented yet")
+    public void getJWTAccessTokenReturnsNull() {
+        var jwtTokenPath = "test-jwt-token-path";
+        var authenticatorId = "test-authenticator-id";
 
-	@Test
-	public void getNewAccessToken() throws ApiException {
+        var result = accessTokenProvider.getJwtAccessToken(apiClient, jwtTokenPath, authenticatorId);
 
-
-		try (MockedStatic<AccessToken> getAccessTokenMockStatic = mockStatic(AccessToken.class)) {
-
-			AccessToken token1 = accessTokenProvider.getNewAccessToken(apiClient);// apiClient.getNewAccessToken();
-			getAccessTokenMockStatic.when(() -> apiClient.getNewAccessToken()).thenReturn(token1);
-			assertEquals(apiClient.getNewAccessToken(), token1);
-		}
-
-	}
-
-	@Test
-	public void getJWTAccessToken() {
-
-		try (MockedStatic<AccessToken> getAccessTokenMockStatic = mockStatic(AccessToken.class)) {
-			AccessToken token = accessTokenProvider.getJwtAccessToken(apiClient, null, null);
-			assertEquals(token, null);
-		}
-
-	}
-
-	@Test
-	public void whenAccessTokenException() {
-		try (MockedStatic<AccessToken> getAccessTokenMockStatic = mockStatic(AccessToken.class)) {
-			getAccessTokenMockStatic.when(() -> accessTokenProvider.getNewAccessToken(apiClient))
-					.thenThrow(new ApiException("Access Token invalid"));
-			assertThrows(ApiException.class, () -> accessTokenProvider.getNewAccessToken(apiClient));
-		}
-
-	}
-
+        assertNull(result);
+        verifyNoInteractions(apiClient);
+    }
 }

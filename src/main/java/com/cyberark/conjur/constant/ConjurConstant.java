@@ -7,7 +7,6 @@ package com.cyberark.conjur.constant;
  *
  */
 public class ConjurConstant {
-
 	/**
 	 * Generic extension for properties define at conjur.properties.
 	 */
@@ -68,7 +67,7 @@ public class ConjurConstant {
 	 */
 	public static final String CODE_422 = "A request parameter was missing or invalid.";
 	
-	/**InValid Account*/
+	/**Invalid Account*/
 	public static final String INVALID_ACCOUNT="Missing or invalid ConjurAccount";
 	
 	/**Invalid BaseUrl*/
@@ -82,6 +81,4 @@ public class ConjurConstant {
 	
 	/**Invalid APIKey*/
 	public static final String INVALID_APIKEY="Missing or invalid API KEY";
-	
-
 }

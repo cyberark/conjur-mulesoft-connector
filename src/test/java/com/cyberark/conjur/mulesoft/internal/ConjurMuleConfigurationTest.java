@@ -1,23 +1,21 @@
 package com.cyberark.conjur.mulesoft.internal;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-
-@RunWith(MockitoJUnitRunner.class)
 public class ConjurMuleConfigurationTest {
 
     private ConjurMuleConfiguration conjurMuleConfiguration;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         conjurMuleConfiguration = new ConjurMuleConfiguration();
     }
 
 	@Test
+    @DisplayName("setConfigId should persist the config ID so getConfigId returns the same value")
 	public void setConfigIdShouldStoreValue() {
         var expectedConfigId = "1";
 

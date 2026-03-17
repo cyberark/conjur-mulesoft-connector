@@ -6,20 +6,21 @@ import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.ApiClient;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;
 import com.cyberark.conjur.service.ConjurServiceImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ConjurMuleConnectionProviderTest {
 
     private ConjurMuleConnectionProvider provider;
@@ -41,7 +42,7 @@ public class ConjurMuleConnectionProviderTest {
     private static final String SSL_CERT = "sslCert";
     private static final String CERT_FILE = "cert";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         config = new ConjurConfiguration();
         config.setConjurAccount(ACCOUNT);
@@ -65,6 +66,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("connect should return single secret when key has one value")
     public void testConnectSingleSecret() throws Exception {
         setPrivateField(provider, "key", "db/password");
 
@@ -83,6 +85,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("connect should return batch secrets when key has multiple values")
     public void testConnectBatchSecret() throws Exception {
         setPrivateField(provider, "key", "db/password,db/username");
 
@@ -101,6 +104,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("connect should throw ModuleException when connection setup fails")
     public void testConnectThrowsModuleException() throws Exception {
         setPrivateField(provider, "key", "db/password");
 
@@ -115,6 +119,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("disconnect should invalidate connection")
     public void testDisconnectCallsInvalidate() {
         ConjurMuleConnection mockConnection = mock(ConjurMuleConnection.class);
 
@@ -124,6 +129,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("validate should return valid result")
     public void testValidateReturnsSuccess() {
         var mockConnection = mock(ConjurMuleConnection.class);
         var result = provider.validate(mockConnection);
@@ -132,6 +138,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("isValidParameters should throw ModuleException for each missing required field")
     public void testIsValidParametersThrowsException() {
         // Empty account
         var ex1 = assertThrows(ModuleException.class, () ->
@@ -160,6 +167,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
+    @DisplayName("isValidParameters should return false for error flag when all parameters are valid")
     public void testIsValidParametersAllValidReturnsFalse() throws Exception {
         boolean result = provider.isValidParameters(ACCOUNT, URL, LOGIN, API_KEY, SSL_CERT);
         assertFalse(result);

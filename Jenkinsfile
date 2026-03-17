@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@Library("product-pipelines-shared-library") _
+@Library('product-pipelines-shared-library') _
 // Automated release, promotion and dependencies
 properties([
   // Include the automated release parameters for the build
@@ -9,7 +9,7 @@ properties([
 ])
 
 // Performs release promotion.  No other stages will be run
-if (params.MODE == "PROMOTE") {
+if (params.MODE == 'PROMOTE') {
   release.promote(params.VERSION_TO_PROMOTE) { infrapool, sourceVersion, targetVersion, assetDirectory ->
     // Any assets from sourceVersion Github release are available in assetDirectory
     // Any version number updates from sourceVersion to targetVersion occur here
@@ -18,7 +18,7 @@ if (params.MODE == "PROMOTE") {
 
     //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
     // Pass assetDirectory through to publish.sh as an env var.
-    env.ASSET_DIR=assetDirectory
+    env.ASSET_DIR = assetDirectory
 
     infrapool.agentSh """
       set -xuo pipefail
@@ -54,41 +54,36 @@ pipeline {
 
   stages {
     // Aborts any builds triggered by another project that wouldn't include any changes
-    stage ("Skip build if triggering job didn't create a release") {
+    stage("Skip build if triggering job didn't create a release") {
       when {
         expression {
-          MODE == "SKIP"
+          MODE == 'SKIP'
         }
       }
       steps {
         script {
           currentBuild.result = 'ABORTED'
-          error("Aborting build because this build was triggered from upstream, but no release was built")
+          error('Aborting build because this build was triggered from upstream, but no release was built')
         }
       }
     }
 
     stage('Get InfraPool ExecutorV2 Agent(s)') {
-      steps{
+      steps {
         script {
           // Request ExecutorV2 agents for 1 hour(s)
-          INFRAPOOL_EXECUTORV2_AGENTS = getInfraPoolAgent(type: "ExecutorV2", quantity: 1, duration: 1)
+          INFRAPOOL_EXECUTORV2_AGENTS = getInfraPoolAgent(type: 'ExecutorV2', quantity: 1, duration: 1)
           INFRAPOOL_EXECUTORV2_AGENT_0 = INFRAPOOL_EXECUTORV2_AGENTS[0]
-          infrapool = infraPoolConnect(INFRAPOOL_EXECUTORV2_AGENT_0, {})
+          infrapool = infraPoolConnect(INFRAPOOL_EXECUTORV2_AGENT_0, { })
         }
       }
     }
-   
-    stage('Update conjur-intro submodule is checked out') {
-      steps {
-          sh 'git submodule update --init --recursive'
-      }
-    }
+
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
       steps {
         script {
-          updateVersion(infrapool, "CHANGELOG.md","${BUILD_NUMBER}")
+          updateVersion(infrapool, 'CHANGELOG.md', "${BUILD_NUMBER}")
         }
       }
     }
@@ -101,22 +96,10 @@ pipeline {
       }
     }
 
-    stage('Conjur Mule test stage oss') {
+    stage('Run Unit Tests & Report Coverage') {
       steps {
         script {
-          //  infrapool.agentSh './test'
-          //  infrapool.agentSh './start_oss'
-          infrapool.agentSh './deploy_mule.sh'
-          infrapool.agentSh './start_oss'
-        }
-      }
-    }
-
-    stage('Conjur Mule test stage enterprise') {
-      steps {
-        script {
-          //  infrapool.agentSh './test'
-          infrapool.agentSh './start_enterprise'
+          infrapool.agentSh './run_unit_tests.sh'
         }
       }
       post {
@@ -131,111 +114,10 @@ pipeline {
       }
     }
 
-    stage('Report Test Coverage to Codacy'){
-      steps {
-        script {
-          dir('target/site/jacoco'){
-            infrapool.agentStash name: 'jacoco', includes: 'jacaco.xml'
-            unstash 'jacoco'
-            codacy action: 'reportCoverage', filePath: "jacoco.xml"
-          }
-          infrapool.agentStash name: 'target-site-jacoco', includes: 'target/site/jacoco/*.xml'
-          unstash 'target-site-jacoco'
-          publishHTML (target : [allowMissing: false,
-            alwaysLinkToLastBuild: false,
-            keepAll: true,
-            reportDir: 'target/site/jacoco/',
-            reportFiles: 'index.html',
-            reportName: 'Coverage Report',
-            reportTitles: 'Mulesoft Code Coverage Jacoco report'])
-        }
-      }
-    }
-
-    stage('Conjur Mule test stage cloud') {
-      stages {
-        stage('Create a Tenant') {
-          steps {
-            script {
-              TENANT = getConjurCloudTenant()
-            }
-          }
-        }
-        stage('Authenticate') {
-          steps {
-            script {
-              def id_token = getConjurCloudTenant.tokens(
-                infrapool: infrapool,
-                identity_url: "${TENANT.identity_information.idaptive_tenant_fqdn}",
-                username: "${TENANT.login_name}"
-              )
-
-              def conj_token = getConjurCloudTenant.tokens(
-                infrapool: infrapool,
-                conjur_url: "${TENANT.conjur_cloud_url}",
-                identity_token: "${id_token}"
-                )
-
-              env.conj_token = conj_token
-            }
-          }
-        }
-        stage('Run tests against Tenant') {
-          environment {
-            INFRAPOOL_CONJUR_APPLIANCE_URL="${TENANT.conjur_cloud_url}"
-            INFRAPOOL_CONJUR_AUTHN_LOGIN="${TENANT.login_name}"
-            INFRAPOOL_CONJUR_AUTHN_TOKEN="${env.conj_token}"
-            INFRAPOOL_TEST_CLOUD=true
-          }
-          steps {
-            script {
-              infrapool.agentSh './start_mule'
-            }
-          }
-        }
-        stage('Get Edge Token') {
-          steps {
-            script {
-              def edge_token = getConjurCloudTenant.tokens(
-                infrapool: infrapool,
-                conjur_url: "${TENANT.conjur_cloud_url}",
-                edge_name: "${TENANT.conjur_edge_name}",
-                conjur_token: "${conj_token}"
-              )
-
-              def deploy_edge = getConjurCloudTenant.edge(
-                infrapool: infrapool,
-                conjur_url: "${TENANT.conjur_cloud_url}",
-                edge_name: "edge-test",
-                edge_token: "${edge_token}",
-                common_name: "edge-test",
-                subject_alt_names: "edge-test"
-              )
-              
-              env.edge_token = edge_token
-            }
-          }
-        }
-        stage('Run tests against Edge') {
-          environment {
-            INFRAPOOL_CONJUR_APPLIANCE_URL="${TENANT.conjur_cloud_url}"
-            INFRAPOOL_CONJUR_AUTHN_LOGIN="${TENANT.login_name}"
-            INFRAPOOL_CONJUR_AUTHN_TOKEN="${env.edge_token}"
-            INFRAPOOL_TEST_CLOUD=true
-          }
-          steps {
-            script {
-              infrapool.agentSh "./start_mule edge"
-            }
-          }
-        }
-      }
-    }
-
     stage('Release') {
       when {
         expression {
-          MODE == "RELEASE"
+          MODE == 'RELEASE'
         }
       }
 
@@ -252,10 +134,7 @@ pipeline {
   }
   post {
     always {
-      script {
-            deleteConjurCloudTenant("${TENANT.id}")
-      }
-      releaseInfraPoolAgent(".infrapool/release_agents")
+      releaseInfraPoolAgent('.infrapool/release_agents')
     }
   }
 }

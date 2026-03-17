@@ -1,14 +1,16 @@
 package com.cyberark.conjur.mulesoft.internal;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ConjurMuleOperationsTest {
 
     @Mock
@@ -16,12 +18,13 @@ public class ConjurMuleOperationsTest {
 
     private ConjurMuleOperations conjurMuleOperations;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         conjurMuleOperations = new ConjurMuleOperations();
     }
 
     @Test
+    @DisplayName("retrieveSecret should return secret value from connection")
     public void retrieveSecretReturnsValue() {
         when(mockConnection.getValue()).thenReturn("mySecret");
 
@@ -31,6 +34,7 @@ public class ConjurMuleOperationsTest {
     }
 
     @Test
+    @DisplayName("retrieveSecret should return error message when value retrieval fails")
     public void retrieveSecretReturnsErrorMsgOnException() throws Exception {
         when(mockConnection.getValue()).thenThrow(new RuntimeException("fail"));
         when(mockConnection.getErrorMsg()).thenReturn("errorOccurred");

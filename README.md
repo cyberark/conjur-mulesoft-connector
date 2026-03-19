@@ -14,3 +14,22 @@ This repo is a **Certified** level project. It's a community contributed project
 
 Please refer to official [documentation](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/HomeTilesLPs/LP-Tile4.htm)
 
+## Running Unit Tests
+
+### Prerequisites
+- Docker installed
+
+### Run Tests
+
+Run the unit tests with JaCoCo code coverage report:
+
+```bash
+./run_unit_tests.sh
+```
+
+This script will:
+1. Build a Docker image with Maven and Java
+2. Run Maven tests with JaCoCo code coverage
+3. Generate test reports in `target/surefire-reports/`
+4. Generate coverage reports in `target/site/jacoco/`
+

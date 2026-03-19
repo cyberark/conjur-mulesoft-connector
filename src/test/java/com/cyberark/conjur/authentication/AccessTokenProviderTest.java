@@ -1,19 +1,20 @@
 package com.cyberark.conjur.authentication;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import com.cyberark.conjur.sdk.AccessToken;
 import com.cyberark.conjur.sdk.ApiClient;
 import com.cyberark.conjur.sdk.ApiException;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AccessTokenProviderTest {
 
     @Mock
@@ -26,6 +27,7 @@ public class AccessTokenProviderTest {
     private AccessTokenProviderImpl accessTokenProvider;
 
     @Test
+    @DisplayName("getNewAccessToken should return token on success")
     public void getNewAccessTokenReturnsToken() throws ApiException {
         when(apiClient.getNewAccessToken()).thenReturn(accessToken);
 
@@ -36,6 +38,7 @@ public class AccessTokenProviderTest {
     }
 
     @Test
+    @DisplayName("getNewAccessToken should throw ApiException on client error")
     public void getNewAccessTokenReturnsException() {
         when(apiClient.getNewAccessToken()).thenThrow(new RuntimeException("API error"));
 
@@ -47,7 +50,7 @@ public class AccessTokenProviderTest {
     }
 
     @Test
-//    @DisplayName("getJwtAccessToken should return null because it is not implemented yet")
+    @DisplayName("getJwtAccessToken should return null (not implemented)")
     public void getJWTAccessTokenReturnsNull() {
         var jwtTokenPath = "test-jwt-token-path";
         var authenticatorId = "test-authenticator-id";

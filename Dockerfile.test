@@ -1,0 +1,6 @@
+FROM maven:3.9-amazoncorretto-17
+
+WORKDIR /repo
+
+ENTRYPOINT ["mvn"]
+CMD ["--batch-mode", "test"]

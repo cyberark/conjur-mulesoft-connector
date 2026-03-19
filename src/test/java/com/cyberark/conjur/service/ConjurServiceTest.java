@@ -1,20 +1,20 @@
 package com.cyberark.conjur.service;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import com.cyberark.conjur.sdk.ApiException;
 import com.cyberark.conjur.sdk.endpoint.SecretsApi;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ConjurServiceTest {
 
     @Mock
@@ -25,12 +25,13 @@ public class ConjurServiceTest {
     private final String ACCOUNT = "testAccount";
     private final String VARIABLE_CONST = "variable";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         conjurService = new ConjurServiceImpl(mockSecretsApi);
     }
 
     @Test
+    @DisplayName("getSecret should return secret from SecretsApi")
     public void getSecretReturnsSecret() throws ApiException {
         var variableId = "mySecret";
         var expectedSecret = "Secret";
@@ -42,6 +43,7 @@ public class ConjurServiceTest {
     }
 
     @Test
+    @DisplayName("getBatchSecrets should return mapped secrets for variable IDs")
     public void getBatchSecretsReturnsSecrets() throws ApiException {
         var variableIds = "secret1,secret2";
 

@@ -38,7 +38,7 @@ docker run \
     --workdir "${PWD}" \
     tools \
         find . -name "*.jar"
-        
+
 
 echo "find the jar file location in main server"
 find . -name "*.jar"

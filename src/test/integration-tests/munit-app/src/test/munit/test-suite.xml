@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+    <munit:config name="test-suite.xml"/>
+
+    <!-- Test 1: retrieve firstSecret -->
+    <munit:test name="retrieve-first-secret-test" description="Real Conjur call - retrieve mulesoft/firstSecret">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="first" doc:name="Set key to first"/>
+            <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                doc:name="Assert first secret value"
+                actual="#[payload]"
+                expected="HelloFromFirstSecret"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test 2: retrieve secondSecret -->
+    <munit:test name="retrieve-second-secret-test" description="Real Conjur call - retrieve mulesoft/secondSecret">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="second" doc:name="Set key to second"/>
+            <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                doc:name="Assert second secret value"
+                actual="#[payload]"
+                expected="HelloFromSecondSecret"/>
+        </munit:validation>
+    </munit:test>
+
+</mule>

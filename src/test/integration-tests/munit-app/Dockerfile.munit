@@ -1,0 +1,4 @@
+FROM maven:3.9-amazoncorretto-17
+WORKDIR /repo/src/test/integration-tests/munit-app
+CMD ["mvn", "-f", "pom.xml", "clean", "test"]
+

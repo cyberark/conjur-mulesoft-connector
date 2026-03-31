@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns:conjurvaultconnector="http://www.mulesoft.org/schema/mule/conjurvaultconnector"
-      xmlns:http="http://www.mulesoft.org/schema/mule/http"
       xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-        http://www.mulesoft.org/schema/mule/conjurvaultconnector http://www.mulesoft.org/schema/mule/conjurvaultconnector/current/mule-conjurvaultconnector.xsd
-        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
-
-    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config">
-        <http:listener-connection host="0.0.0.0" port="8081"/>
-    </http:listener-config>
+        http://www.mulesoft.org/schema/mule/conjurvaultconnector http://www.mulesoft.org/schema/mule/conjurvaultconnector/current/mule-conjurvaultconnector.xsd">
 
     <conjurvaultconnector:config name="Conjur_First" doc:name="ConjurVaultConnector First">
         <conjurvaultconnector:connection
@@ -33,11 +27,46 @@
             key="${conjur.secret.path}/secondSecret"/>
     </conjurvaultconnector:config>
 
-    <flow name="testFlow">
-        <http:listener config-ref="HTTP_Listener_config" path="/secret" doc:name="Listener"/>
-        <set-variable variableName="requestedKey" value="#[attributes.queryParams.key default 'first']" doc:name="Set requestedKey"/>
-        <flow-ref name="resolveSecretByKey" doc:name="Resolve secret"/>
-    </flow>
+    <conjurvaultconnector:config name="Conjur_Multiple" doc:name="ConjurVaultConnector Multiple">
+        <conjurvaultconnector:connection
+                conjurAccount="conjur"
+                conjurApplianceUrl="${conjur.appliance.url}"
+                conjurAuthnLogin="${conjur.host.path}"
+                conjurApiKey="${conjur.api.key}"
+                conjurSslCertificate="${conjur.ssl.certificate.path}"
+                key="${conjur.secret.path}/firstSecret,${conjur.secret.path}/secondSecret"/>
+    </conjurvaultconnector:config>
+
+    <conjurvaultconnector:config name="Conjur_Empty" doc:name="ConjurVaultConnector Empty">
+        <conjurvaultconnector:connection
+                conjurAccount="conjur"
+                conjurApplianceUrl="${conjur.appliance.url}"
+                conjurAuthnLogin="${conjur.host.path}"
+                conjurApiKey="${conjur.api.key}"
+                conjurSslCertificate="${conjur.ssl.certificate.path}"
+                key="${conjur.secret.path}/emptySecret"/>
+    </conjurvaultconnector:config>
+
+    <conjurvaultconnector:config name="Conjur_NonExisting" doc:name="ConjurVaultConnector NonExisting">
+        <conjurvaultconnector:connection
+                conjurAccount="conjur"
+                conjurApplianceUrl="${conjur.appliance.url}"
+                conjurAuthnLogin="${conjur.host.path}"
+                conjurApiKey="${conjur.api.key}"
+                conjurSslCertificate="${conjur.ssl.certificate.path}"
+                key="${conjur.secret.path}/nonExistingSecret"/>
+    </conjurvaultconnector:config>
+
+    <conjurvaultconnector:config name="Conjur_Wrong_Configuration" doc:name="ConjurVaultConnector WrongConfiguration">
+        <conjurvaultconnector:connection
+                conjurAccount="WrongAccount"
+                conjurApplianceUrl="${conjur.appliance.url}"
+                conjurAuthnLogin="${conjur.host.path}"
+                conjurApiKey="${conjur.api.key}"
+                conjurSslCertificate="${conjur.ssl.certificate.path}"
+                key="${conjur.secret.path}/firstSecret"/>
+    </conjurvaultconnector:config>
+
 
     <sub-flow name="resolveSecretByKey">
         <choice doc:name="Route by key">
@@ -47,9 +76,18 @@
             <when expression="#[vars.requestedKey == 'second']">
                 <conjurvaultconnector:retrieve-secret config-ref="Conjur_Second" doc:name="Retrieve second secret"/>
             </when>
-            <otherwise>
-                <set-payload value="#['Unknown key: ' ++ vars.requestedKey ++ '. Use key=first or key=second']" doc:name="Unknown key"/>
-            </otherwise>
+            <when expression="#[vars.requestedKey == 'multiple']">
+                <conjurvaultconnector:retrieve-secret config-ref="Conjur_Multiple" doc:name="Retrieve multiple secrets"/>
+            </when>
+            <when expression="#[vars.requestedKey == 'empty']">
+                <conjurvaultconnector:retrieve-secret config-ref="Conjur_Empty" doc:name="Retrieve secret without value"/>
+            </when>
+            <when expression="#[vars.requestedKey == 'nonExisting']">
+                <conjurvaultconnector:retrieve-secret config-ref="Conjur_NonExisting" doc:name="Retrieve non existing secret"/>
+            </when>
+            <when expression="#[vars.requestedKey == 'wrongConfiguration']">
+                <conjurvaultconnector:retrieve-secret config-ref="Conjur_Wrong_Configuration" doc:name="Retrieve Secret (Invalid Account Config)"/>
+            </when>
         </choice>
     </sub-flow>
 

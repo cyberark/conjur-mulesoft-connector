@@ -10,7 +10,8 @@
     <munit:config name="test-suite.xml"/>
 
     <!-- Test 1: retrieve firstSecret -->
-    <munit:test name="retrieve-first-secret-test" description="Real Conjur call - retrieve mulesoft/firstSecret">
+    <munit:test name="retrieve-first-secret-test"
+                description="Real Conjur call – retrieving mulesoft/firstSecret should return the value stored in Conjur">
         <munit:execution>
             <set-variable variableName="requestedKey" value="first" doc:name="Set key to first"/>
             <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
@@ -24,7 +25,8 @@
     </munit:test>
 
     <!-- Test 2: retrieve secondSecret -->
-    <munit:test name="retrieve-second-secret-test" description="Real Conjur call - retrieve mulesoft/secondSecret">
+    <munit:test name="retrieve-second-secret-test"
+                description="Real Conjur call – retrieving mulesoft/secondSecret should return its stored value">
         <munit:execution>
             <set-variable variableName="requestedKey" value="second" doc:name="Set key to second"/>
             <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
@@ -34,6 +36,105 @@
                 doc:name="Assert second secret value"
                 actual="#[payload]"
                 expected="HelloFromSecondSecret"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test 3: retrieve multiple secrets -->
+    <munit:test name="retrieve-both-secrets-test"
+                description="Real Conjur call – retrieving multiple secrets should return their stored values">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="multiple" doc:name="Set key to multiple secrets retrieval"/>
+            <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                    doc:name="Assert multiple secrets value"
+                    actual="#[payload]"
+                    expected="{conjur:variable:mulesoft/firstSecret=HelloFromFirstSecret, conjur:variable:mulesoft/secondSecret=HelloFromSecondSecret}"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test 4: attempt to retrieve a secret with an empty value -->
+    <!-- This error message should be improved as it currently does not give users any clue about what is wrong. A bug ticket to track CNJR-13561 -->
+    <munit:test name="retrieve-secret-without-value"
+                description="Real Conjur call – retrieving a secret without a value should return unknown description">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="empty" doc:name="Set key to secret without value"/>
+            <set-variable variableName="errorCaptured" value="false" doc:name="Init errorCaptured"/>
+            <try doc:name="Try">
+                <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+                <error-handler>
+                    <on-error-continue type="ANY" doc:name="On Error Continue">
+                        <munit-tools:assert-that
+                            doc:name="Assert error description"
+                            expression="#[error.description]"
+                            is="#[MunitTools::equalTo('unknown description')]"/>
+                        <set-variable variableName="errorCaptured" value="true" doc:name="Mark error captured"/>
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                    doc:name="Assert error was raised"
+                    actual="#[(vars.errorCaptured default false) as String]"
+                    expected="true"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test 5: attempt to retrieve a secret from a variable that does not exist in Conjur -->
+    <!-- This error message should be improved as it currently does not give users any clue about what is wrong. A bug ticket to track CNJR-13561 -->
+    <munit:test name="retrieve-secret-non-existing-secret"
+                description="Real Conjur call – retrieving a non-existent secret should return unknown description">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="nonExisting" doc:name="Set key to non existing secret"/>
+            <set-variable variableName="errorCaptured" value="false" doc:name="Init errorCaptured"/>
+            <try doc:name="Try">
+                <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+                <error-handler>
+                    <on-error-continue type="ANY" doc:name="On Error Continue">
+                        <munit-tools:assert-that
+                            doc:name="Assert error description"
+                            expression="#[error.description]"
+                            is="#[MunitTools::equalTo('unknown description')]"/>
+                        <set-variable variableName="errorCaptured" value="true" doc:name="Mark error captured"/>
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                    doc:name="Assert error was raised"
+                    actual="#[(vars.errorCaptured default false) as String]"
+                    expected="true"/>
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test 6: wrong configuration -->
+    <!-- This error message should be improved as it currently does not give users any clue about what is wrong. A bug ticket to track CNJR-13562 -->
+    <munit:test name="retrieve-secret-wrong-configuration"
+                description="Real Conjur call – providing wrong configuration should return the null access token error">
+        <munit:execution>
+            <set-variable variableName="requestedKey" value="wrongConfiguration" doc:name="Set invalid account to configuration"/>
+            <set-variable variableName="errorCaptured" value="false" doc:name="Init errorCaptured"/>
+            <try doc:name="Try">
+                <flow-ref name="resolveSecretByKey" doc:name="Invoke resolveSecretByKey"/>
+                <error-handler>
+                    <on-error-continue type="ANY" doc:name="On Error Continue">
+                        <munit-tools:assert-that
+                            doc:name="Assert error description"
+                            expression="#[error.description]"
+                            is="#[MunitTools::equalTo('Cannot invoke &quot;com.cyberark.conjur.sdk.AccessToken.getHeaderValue()&quot; because &quot;accessToken&quot; is null')]"/>
+                        <set-variable variableName="errorCaptured" value="true" doc:name="Mark error captured"/>
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-equals
+                    doc:name="Assert error was raised"
+                    actual="#[(vars.errorCaptured default false) as String]"
+                    expected="true"/>
         </munit:validation>
     </munit:test>
 

@@ -84,23 +84,24 @@ public class ConjurConnection {
 			}
 		} catch (IOException ex) {
 			LOGGER.error("Error processing CERT_FILE: {}", ex.getMessage());
-
 		}
 
-		if (conjurApiKey != null && !conjurApiKey.isEmpty()) {
+			if (conjurApiKey != null && !conjurApiKey.isEmpty()) {
 			try {
 				accessToken = accessTokenProvider.getNewAccessToken(client);
+
+                if (accessToken == null) {
+                    throw new ApiException(ConjurConstant.AUTHENTICATION_FAILED);
+                }
 
 				String token = accessToken.getHeaderValue();
 				client.setAccessToken(token);
 				Configuration.setDefaultApiClient(client);
 				LOGGER.debug("StatusCode:200_OK" + ConjurConstant.CODE_200_CONNECTION);
-			}
 
-			catch (Exception ex) {
-
-				throw new ApiException(ex);
-			}
+			} catch (Exception ex) {
+                LOGGER.error(ConjurConstant.AUTHENTICATION_FAILED, ex);
+                throw new ApiException(ConjurConstant.AUTHENTICATION_FAILED);			}
 		}
 
 		return client;

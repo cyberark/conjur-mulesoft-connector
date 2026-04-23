@@ -2,6 +2,7 @@ package com.cyberark.conjur.mulesoft.internal;
 
 import java.util.UUID;
 
+import com.cyberark.conjur.sdk.ApiException;
 import org.apache.commons.lang3.StringUtils;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -77,41 +78,46 @@ public class ConjurMuleConnectionProvider implements ConnectionProvider<ConjurMu
 
 	@Override
 	public ConjurMuleConnection connect() throws ConnectionException {
-
 		LOGGER.info("Calling Demo Connection Provider connect()");
-
 		
 		try {
-			boolean errorFlag = isValidParameters(conjurAccount, conjurApplianceUrl, conjurAuthnLogin, conjurApiKey,
+			isValidParameters(conjurAccount, conjurApplianceUrl, conjurAuthnLogin, conjurApiKey,
 					conjurSslCertificate);
 
-			if (!errorFlag) {
-				config.setConjurAccount(conjurAccount);
-				config.setConjurApplianceUrl(conjurApplianceUrl);
-				config.setConjurAuthnLogin(conjurAuthnLogin);
-				config.setConjurApiKey(conjurApiKey);
-				config.setConjurSslCertificate(conjurSslCertificate);
-				config.setConjurCertFile(conjurCertFile);
-			}
+             config.setConjurAccount(conjurAccount);
+             config.setConjurApplianceUrl(conjurApplianceUrl);
+             config.setConjurAuthnLogin(conjurAuthnLogin);
+             config.setConjurApiKey(conjurApiKey);
+             config.setConjurSslCertificate(conjurSslCertificate);
+             config.setConjurCertFile(conjurCertFile);
+
 
 			ConjurConnection.getConnection(config);
 
 			String account = ConjurConnection.getAccount(secretsApi);
 			String[] keys = key.split(",");
 			if (keys.length > 1) {
-				
 				secretValue = conjurService.getBatchSecrets(key, account);
 
 			} else {
 				secretValue = conjurService.getSecret(account, ConjurConstant.CONJUR_KIND, key);
 			}
 			
-		} catch (Exception e) {
-			throw new ModuleException(ConjurErrorTypes.INVALID_DATA, new ConnectionException(e.getCause()));
-		} 
+		} catch (ApiException ex) {
+            String exMessage = StringUtils.isNotEmpty(ex.getResponseBody()) ? ex.getResponseBody() : ex.getMessage();
+
+            if (StringUtils.isEmpty(exMessage)) {
+                exMessage = ConjurConstant.AUTHENTICATION_FAILED;
+            }
+
+            throw new ModuleException(ConjurErrorTypes.INVALID_DATA, new RuntimeException(exMessage));
+
+		} catch (Exception ex) {
+            String exMessage = (ex.getMessage() != null) ? ex.getMessage() : ConjurConstant.AUTHENTICATION_FAILED;
+            throw new ConnectionException(exMessage, ex);
+        }
 
 		return new ConjurMuleConnection(uniqueID, secretValue,errorCode,errorMsg);
-
 	}
 
 	@Override

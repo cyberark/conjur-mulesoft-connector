@@ -81,4 +81,7 @@ public class ConjurConstant {
 	
 	/**Invalid APIKey*/
 	public static final String INVALID_APIKEY="Missing or invalid API KEY";
+
+    /** Authentication failed during handshake */
+    public static final String AUTHENTICATION_FAILED = "Authentication failed";
 }

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.extension.api.exception.ModuleException;
 
 import java.lang.reflect.Field;
@@ -104,7 +105,7 @@ public class ConjurMuleConnectionProviderTest {
     }
 
     @Test
-    @DisplayName("connect should throw ModuleException when connection setup fails")
+    @DisplayName("connect should throw ConnectionException when connection setup fails")
     public void testConnectThrowsModuleException() throws Exception {
         setPrivateField(provider, "key", "db/password");
 
@@ -112,7 +113,7 @@ public class ConjurMuleConnectionProviderTest {
             conjurStatic.when(() -> ConjurConnection.getConnection(config))
                     .thenThrow(new RuntimeException("fail"));
 
-            assertThrows(ModuleException.class, () -> {
+            assertThrows(ConnectionException.class, () -> {
                 provider.connect();
             });
         }

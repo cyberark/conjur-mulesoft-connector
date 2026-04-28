@@ -44,22 +44,6 @@
 	<artifactId>mule-modules-parent</artifactId> 
 		<version>1.1.3</version> </parent> -->
 	<profiles>
-		<!--  Profile for activating Artifactory as our deployment goal  -->
-		<profile>
-			<id>artifactory</id>
-			<distributionManagement>
-				<repository>
-					<id>conjurinc-releases</id>
-					<name>conjurinc-releases</name>
-					<url>https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
-				</repository>
-				<snapshotRepository>
-					<id>conjurinc-snapshots</id>
-					<name>conjurinc-snapshots</name>
-					<url>https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
-				</snapshotRepository>
-			</distributionManagement>
-		</profile>
 		<!--  Profile for deploying and releasing to Maven Central through Central Portal  -->
 		<profile>
 			<id>central-portal</id>
@@ -502,18 +486,4 @@
 				https://repository.mulesoft.org/nexus/content/repositories/public/</url>
 		</pluginRepository>
 	</pluginRepositories>
-	<distributionManagement>
-		<snapshotRepository>
-			<id>conjurinc-snapshots</id>
-			<name>conjurinc-snapshots</name>
-			<url>https://conjurinc.jfrog.io/artifactory/libs-snapshot-local</url>
-			<uniqueVersion>false</uniqueVersion>
-		</snapshotRepository>
-		<repository>
-			<id>conjurinc-releases</id>
-			<name>conjurinc-releases</name>
-			<url>https://conjurinc.jfrog.io/artifactory/libs-release-local</url>
-			<uniqueVersion>false</uniqueVersion>
-		</repository>
-	</distributionManagement>
 </project>

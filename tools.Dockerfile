@@ -7,6 +7,7 @@ ARG maven_version
 RUN apk add --no-cache \
     curl \
     unzip \
+    gnupg \
     ca-certificates \
     maven=${maven_version} \
     yq

@@ -38,5 +38,5 @@ docker run \
     --volume "$GPG_PRIVATE_KEY:/gpg_key" \
     --workdir "${PWD}" \
     tools \
-        /bin/bash -ec "gpg --batch --passphrase-file /gpg_password --trust-model always --import /gpg_key
+        /bin/sh -ec "gpg --batch --passphrase-file /gpg_password --trust-model always --import /gpg_key
                        mvn --batch-mode  --settings mvn-settings.xml --file pom.xml deploy -Dmaven.test.skip -P ${maven_profiles}"

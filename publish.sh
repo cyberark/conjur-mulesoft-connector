@@ -20,21 +20,20 @@ fi
 mkdir -p maven_cache
 
 if [[ "${MODE:-}" == "PROMOTE" ]]; then
-    echo "PROMOTE build, publishing to internal artifactory and central portal (maven central)"
+    echo "PROMOTE build, publishing to central portal (maven central)"
     maven_profiles="central-portal,sign"
-else
-    echo "Release build, publishing to internal artifactory"
-    maven_profiles="sign"
-fi
 
-docker run \
-    -e CENTRAL_PORTAL_USERNAME \
-    -e CENTRAL_PORTAL_TOKEN \
-    --volume "${PWD}:${PWD}" \
-    --volume "${PWD}/maven_cache":/root/.m2 \
-    --volume "$GPG_PASSWORD:/gpg_password" \
-    --volume "$GPG_PRIVATE_KEY:/gpg_key" \
-    --workdir "${PWD}" \
-    tools \
-        /bin/sh -ec "gpg --batch --passphrase-file /gpg_password --trust-model always --import /gpg_key
-                       mvn --batch-mode  --settings mvn-settings.xml --file pom.xml deploy -Dmaven.test.skip -P ${maven_profiles}"
+    docker run \
+        -e CENTRAL_PORTAL_USERNAME \
+        -e CENTRAL_PORTAL_TOKEN \
+        --volume "${PWD}:${PWD}" \
+        --volume "${PWD}/maven_cache":/root/.m2 \
+        --volume "$GPG_PASSWORD:/gpg_password" \
+        --volume "$GPG_PRIVATE_KEY:/gpg_key" \
+        --workdir "${PWD}" \
+        tools \
+            /bin/sh -ec "gpg --batch --passphrase-file /gpg_password --trust-model always --import /gpg_key
+                           mvn --batch-mode  --settings mvn-settings.xml --file pom.xml deploy -Dmaven.test.skip -P ${maven_profiles}"
+else
+    echo "Release build, skipping Maven deploy (handled by pipeline library)"
+fi

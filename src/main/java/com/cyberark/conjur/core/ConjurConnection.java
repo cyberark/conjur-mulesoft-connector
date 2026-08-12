@@ -86,7 +86,24 @@ public class ConjurConnection {
 			LOGGER.error("Error processing CERT_FILE: {}", ex.getMessage());
 		}
 
-			if (conjurApiKey != null && !conjurApiKey.isEmpty()) {
+		boolean isCertAuth = StringUtils.isNotEmpty(config.getConjurAuthnCertServiceId())
+				&& (StringUtils.isNotEmpty(config.getConjurClientCertFile()) || StringUtils.isNotEmpty(config.getConjurClientCert()))
+				&& (StringUtils.isNotEmpty(config.getConjurClientKeyFile()) || StringUtils.isNotEmpty(config.getConjurClientKey()));
+
+		if (isCertAuth) {
+			try {
+				AccessToken certToken = accessTokenProvider.getCertAccessToken(config);
+				if (certToken == null) {
+					throw new ApiException(ConjurConstant.AUTHENTICATION_FAILED);
+				}
+				client.setAccessToken(certToken.getHeaderValue());
+				Configuration.setDefaultApiClient(client);
+				LOGGER.debug("StatusCode:200_OK" + ConjurConstant.CODE_200_CONNECTION);
+			} catch (ApiException ex) {
+				LOGGER.error(ConjurConstant.AUTHENTICATION_FAILED, ex);
+				throw new ApiException(ConjurConstant.AUTHENTICATION_FAILED);
+			}
+		} else if (conjurApiKey != null && !conjurApiKey.isEmpty()) {
 			try {
 				accessToken = accessTokenProvider.getNewAccessToken(client);
 

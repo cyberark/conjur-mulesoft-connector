@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import com.cyberark.conjur.domain.ConjurConfiguration;
 import com.cyberark.conjur.sdk.AccessToken;
 import com.cyberark.conjur.sdk.ApiClient;
 import com.cyberark.conjur.sdk.ApiException;
@@ -59,5 +60,60 @@ public class AccessTokenProviderTest {
 
         assertNull(result);
         verifyNoInteractions(apiClient);
+    }
+
+    @Test
+    @DisplayName("getCertAccessToken should throw ApiException when client cert is missing")
+    public void getCertAccessTokenThrowsWhenClientCertMissing() {
+        ConjurConfiguration config = minimalCertAuthConfig();
+        // No client cert set
+
+        assertThrows(ApiException.class, () ->
+                accessTokenProvider.getCertAccessToken(config)
+        );
+    }
+
+    @Test
+    @DisplayName("getCertAccessToken should throw ApiException when client key is missing")
+    public void getCertAccessTokenThrowsWhenClientKeyMissing() {
+        ConjurConfiguration config = minimalCertAuthConfig();
+        config.setConjurClientCert("-----BEGIN CERTIFICATE-----\nMIIFake\n-----END CERTIFICATE-----");
+        // No client key set
+
+        assertThrows(ApiException.class, () ->
+                accessTokenProvider.getCertAccessToken(config)
+        );
+    }
+
+    @Test
+    @DisplayName("getCertAccessToken should throw ApiException when inline PEM cert is malformed")
+    public void getCertAccessTokenThrowsOnMalformedInlineCert() {
+        ConjurConfiguration config = minimalCertAuthConfig();
+        config.setConjurClientCert("not-valid-pem");
+        config.setConjurClientKey("not-valid-pem");
+
+        assertThrows(ApiException.class, () ->
+                accessTokenProvider.getCertAccessToken(config)
+        );
+    }
+
+    @Test
+    @DisplayName("getCertAccessToken should throw ApiException when cert file path does not exist")
+    public void getCertAccessTokenThrowsWhenCertFileNotFound() {
+        ConjurConfiguration config = minimalCertAuthConfig();
+        config.setConjurClientCertFile("/nonexistent/path/client.crt");
+        config.setConjurClientKeyFile("/nonexistent/path/client.key");
+
+        assertThrows(ApiException.class, () ->
+                accessTokenProvider.getCertAccessToken(config)
+        );
+    }
+
+    private ConjurConfiguration minimalCertAuthConfig() {
+        ConjurConfiguration config = new ConjurConfiguration();
+        config.setConjurAccount("conjur");
+        config.setConjurApplianceUrl("https://conjur.example.com");
+        config.setConjurAuthnCertServiceId("test-service");
+        return config;
     }
 }

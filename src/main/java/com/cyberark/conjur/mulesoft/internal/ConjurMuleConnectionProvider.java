@@ -65,6 +65,42 @@ public class ConjurMuleConnectionProvider implements ConnectionProvider<ConjurMu
 	@Parameter
 	private String key;
 
+	/** authn-cert authenticator service ID (e.g. {@code acme-vm}) */
+	@Parameter
+	@Optional
+	private String conjurAuthnCertServiceId;
+
+	/** Path to the client X.509 certificate file (PEM) */
+	@Parameter
+	@Optional
+	private String conjurClientCertFile;
+
+	/**
+	 * Path to the client private key file (PEM).
+	 * File permissions must be owner-read-only (chmod 0600 or stricter).
+	 */
+	@Parameter
+	@Optional
+	private String conjurClientKeyFile;
+
+	/**
+	 * Inline PEM content of the client X.509 certificate.
+	 * Prefer {@code conjurClientCertFile}; protect with Mule Secure Properties
+	 * ({@code secure::}) if using inline PEM.
+	 */
+	@Parameter
+	@Optional
+	private String conjurClientCert;
+
+	/**
+	 * Inline PEM content of the client private key.
+	 * Must never appear in plaintext in Mule config XML — always use Mule Secure
+	 * Properties ({@code secure::} prefix).
+	 */
+	@Parameter
+	@Optional
+	private String conjurClientKey;
+
 	private SecretsApi secretsApi = new SecretsApi();
 	ConjurService conjurService = new ConjurServiceImpl();
 
@@ -81,8 +117,13 @@ public class ConjurMuleConnectionProvider implements ConnectionProvider<ConjurMu
 		LOGGER.info("Calling Demo Connection Provider connect()");
 		
 		try {
-			isValidParameters(conjurAccount, conjurApplianceUrl, conjurAuthnLogin, conjurApiKey,
-					conjurSslCertificate);
+			if (StringUtils.isNotEmpty(conjurAuthnCertServiceId)) {
+				validateForCertAuth(conjurAccount, conjurApplianceUrl, conjurAuthnCertServiceId,
+						conjurClientCertFile, conjurClientCert, conjurClientKeyFile, conjurClientKey);
+			} else {
+				isValidParameters(conjurAccount, conjurApplianceUrl, conjurAuthnLogin, conjurApiKey,
+						conjurSslCertificate);
+			}
 
              config.setConjurAccount(conjurAccount);
              config.setConjurApplianceUrl(conjurApplianceUrl);
@@ -90,7 +131,11 @@ public class ConjurMuleConnectionProvider implements ConnectionProvider<ConjurMu
              config.setConjurApiKey(conjurApiKey);
              config.setConjurSslCertificate(conjurSslCertificate);
              config.setConjurCertFile(conjurCertFile);
-
+             config.setConjurAuthnCertServiceId(conjurAuthnCertServiceId);
+             config.setConjurClientCertFile(conjurClientCertFile);
+             config.setConjurClientKeyFile(conjurClientKeyFile);
+             config.setConjurClientCert(conjurClientCert);
+             config.setConjurClientKey(conjurClientKey);
 
 			ConjurConnection.getConnection(config);
 
@@ -154,5 +199,33 @@ public class ConjurMuleConnectionProvider implements ConnectionProvider<ConjurMu
 			}
 		}
 		return errorFlag;
+	}
+
+	/**
+	 * Validates parameters specific to authn-cert authentication mode.
+	 * Requires account, applianceUrl, service ID, and at least one of
+	 * (certFile / inlineCert) and one of (keyFile / inlineKey).
+	 */
+	private void validateForCertAuth(String conjurAccount, String conjurApplianceUrl,
+			String serviceId, String clientCertFile, String clientCertInline,
+			String clientKeyFile, String clientKeyInline) {
+		if (StringUtils.isEmpty(conjurAccount)) {
+			throw new ModuleException(ConjurErrorTypes.INVALID_DATA, new Exception(ConjurConstant.INVALID_ACCOUNT));
+		}
+		if (StringUtils.isEmpty(conjurApplianceUrl)) {
+			throw new ModuleException(ConjurErrorTypes.INVALID_DATA, new Exception(ConjurConstant.INVALID_BASEURL));
+		}
+		if (StringUtils.isEmpty(serviceId)) {
+			throw new ModuleException(ConjurErrorTypes.INVALID_DATA,
+					new Exception(ConjurConstant.CERT_AUTH_SERVICE_ID_REQUIRED));
+		}
+		if (StringUtils.isEmpty(clientCertFile) && StringUtils.isEmpty(clientCertInline)) {
+			throw new ModuleException(ConjurErrorTypes.INVALID_DATA,
+					new Exception(ConjurConstant.CERT_AUTH_CLIENT_CERT_REQUIRED));
+		}
+		if (StringUtils.isEmpty(clientKeyFile) && StringUtils.isEmpty(clientKeyInline)) {
+			throw new ModuleException(ConjurErrorTypes.INVALID_DATA,
+					new Exception(ConjurConstant.CERT_AUTH_CLIENT_KEY_REQUIRED));
+		}
 	}
 }

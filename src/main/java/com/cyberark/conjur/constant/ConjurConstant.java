@@ -84,4 +84,20 @@ public class ConjurConstant {
 
     /** Authentication failed during handshake */
     public static final String AUTHENTICATION_FAILED = "Authentication failed";
+
+    /** Missing authn-cert service ID */
+    public static final String CERT_AUTH_SERVICE_ID_REQUIRED =
+            "Missing or invalid Conjur authn-cert Service ID (conjurAuthnCertServiceId)";
+
+    /** Missing client certificate for cert auth */
+    public static final String CERT_AUTH_CLIENT_CERT_REQUIRED =
+            "Missing Conjur client certificate: provide conjurClientCertFile (file path) or conjurClientCert (inline PEM)";
+
+    /** Missing client private key for cert auth */
+    public static final String CERT_AUTH_CLIENT_KEY_REQUIRED =
+            "Missing Conjur client private key: provide conjurClientKeyFile (file path) or conjurClientKey (inline PEM)";
+
+    /** Private key file permissions are too broad */
+    public static final String CERT_AUTH_KEY_FILE_PERMISSIONS =
+            "Client private key file has insecure permissions; restrict to owner-read-only (chmod 0600)";
 }

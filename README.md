@@ -1,6 +1,10 @@
 # Conjur Mulesoft Connector
 
-The CyberArk Conjur MuleSoft Connector provides a secure and efficient way to retrieve secrets from Conjur using API key authentication. 
+The CyberArk Conjur MuleSoft Connector provides a secure and efficient way to retrieve secrets from Conjur. It supports two authentication modes:
+
+- **API key authentication** (`authn`) — authenticates with a Conjur username and API key.
+- **Certificate authentication** (`authn-cert`) — authenticates via mutual TLS (mTLS) using an X.509 client certificate and private key.
+> **Note for Secrets Manager SaaS:** `authn-cert` is only available through a **Secrets Manager Edge** instance. Set `conjurApplianceUrl` to the Edge endpoint (e.g. `https://us-edge.acme.dev/api`).
 
 ## Certification level
 ![](https://img.shields.io/badge/Certification%20Level-Certified-28A745?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
@@ -13,6 +17,53 @@ This repo is a **Certified** level project. It's a community contributed project
 ## Plugin Requirements & Configuration
 
 Please refer to official [documentation](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/HomeTilesLPs/LP-Tile4.htm)
+
+## Authentication modes
+
+### API key authentication (`authn`)
+
+Configure the following parameters in the Mule global config element:
+
+| Parameter | Required | Description |
+|---|---|---|
+| `conjurAccount` | Yes | Conjur account name |
+| `conjurApplianceUrl` | Yes | Conjur / Edge base URL |
+| `conjurAuthnLogin` | Yes | Conjur username (e.g. `host/data/my-app`) |
+| `conjurApiKey` | Yes | API key for the Conjur identity |
+| `conjurSslCertificate` / `conjurCertFile` | Recommended | Path to the Conjur CA certificate (PEM) |
+
+### Certificate authentication (`authn-cert` / mTLS)
+
+Set `conjurAuthnCertServiceId` and the client certificate/key to activate cert auth. When this parameter is present, API key auth is bypassed.
+
+| Parameter | Required | Description |
+|---|---|---|
+| `conjurAccount` | Yes | Conjur account name |
+| `conjurApplianceUrl` | Yes | Conjur / Edge base URL (include `/api` for SaaS Edge) |
+| `conjurAuthnCertServiceId` | Yes | Authenticator service ID (e.g. `acme-vm`) |
+| `conjurClientCertFile` | Yes* | Path to the client X.509 certificate file (PEM) |
+| `conjurClientKeyFile` | Yes* | Path to the client private key file (PEM). **Must be owner-read-only (`chmod 0600`)** |
+| `conjurClientCert` | Yes* | Inline PEM certificate content (alternative to `conjurClientCertFile`) |
+| `conjurClientKey` | Yes* | Inline PEM private key content (alternative to `conjurClientKeyFile`) |
+| `conjurSslCertificate` / `conjurCertFile` | Recommended | Path to the Conjur CA certificate for server verification |
+| `conjurAuthnLogin` | No | Workload host ID for **request host-mode** (URL-encoded, e.g. `host/data/vm-workloads/vm-01`). Leave empty for **SPIFFE mode** |
+
+\* Provide either the file path (`conjurClientCertFile` / `conjurClientKeyFile`) **or** the inline PEM content (`conjurClientCert` / `conjurClientKey`). File path takes precedence.
+
+#### Security requirements for `authn-cert`
+
+- **Private key file permissions** — the key file must be readable only by the owner (`chmod 0600` on Linux/macOS). The connector validates this at startup and rejects world-readable or group-readable files.
+- **Inline PEM** — never place `conjurClientKey` (or `conjurClientCert`) as plaintext in `global-config.xml`. Always use [Mule Secure Properties](https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties) (`secure::` prefix) to encrypt sensitive configuration values.
+- **Conjur Cloud SaaS** — set `conjurApplianceUrl` to the **Secrets Manager Edge** endpoint, not the direct Conjur Cloud SaaS endpoint.
+
+#### Authentication URL
+
+```
+POST <conjurApplianceUrl>/authn-cert/<conjurAuthnCertServiceId>/<conjurAccount>[/<conjurAuthnLogin>]/authenticate
+```
+
+- **Request host-mode** — `conjurAuthnLogin` is set → included (URL-encoded) in the path.
+- **SPIFFE mode** — `conjurAuthnLogin` is empty → omitted from the path; identity is derived from the certificate's SPIFFE SAN.
 
 ## Running Unit Tests
 

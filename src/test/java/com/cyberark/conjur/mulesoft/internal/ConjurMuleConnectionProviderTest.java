@@ -174,6 +174,74 @@ public class ConjurMuleConnectionProviderTest {
         assertFalse(result);
     }
 
+    @Test
+    @DisplayName("connect should succeed with cert auth when serviceId and cert params are set")
+    public void testConnectWithCertAuth() throws Exception {
+        setPrivateField(provider, "key", "db/password");
+        setPrivateField(provider, "conjurAuthnCertServiceId", "my-service");
+        setPrivateField(provider, "conjurClientCertFile", "/path/to/cert.crt");
+        setPrivateField(provider, "conjurClientKeyFile", "/path/to/key.key");
+
+        try (MockedStatic<ConjurConnection> conjurStatic = mockStatic(ConjurConnection.class)) {
+            conjurStatic.when(() -> ConjurConnection.getConnection(any(ConjurConfiguration.class)))
+                    .thenReturn(mockApiClient);
+            conjurStatic.when(() -> ConjurConnection.getAccount(mockSecretsApi)).thenReturn(ACCOUNT);
+
+            when(mockService.getSecret(ACCOUNT, ConjurConstant.CONJUR_KIND, "db/password"))
+                    .thenReturn("certSecret");
+
+            ConjurMuleConnection connection = provider.connect();
+
+            assertNotNull(connection);
+            assertEquals("certSecret", connection.getValue());
+        }
+    }
+
+    @Test
+    @DisplayName("connect should use SPIFFE mode (no workload ID in URL) when authnLogin is empty for cert auth")
+    public void testConnectCertAuthSpiffeMode() throws Exception {
+        setPrivateField(provider, "key", "db/password");
+        setPrivateField(provider, "conjurAuthnCertServiceId", "my-service");
+        setPrivateField(provider, "conjurClientCert", "-----BEGIN CERTIFICATE-----\nfake\n-----END CERTIFICATE-----");
+        setPrivateField(provider, "conjurClientKey", "-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----");
+        setPrivateField(provider, "conjurAuthnLogin", "");
+
+        try (MockedStatic<ConjurConnection> conjurStatic = mockStatic(ConjurConnection.class)) {
+            conjurStatic.when(() -> ConjurConnection.getConnection(any(ConjurConfiguration.class)))
+                    .thenReturn(mockApiClient);
+            conjurStatic.when(() -> ConjurConnection.getAccount(mockSecretsApi)).thenReturn(ACCOUNT);
+
+            when(mockService.getSecret(ACCOUNT, ConjurConstant.CONJUR_KIND, "db/password"))
+                    .thenReturn("spiffeSecret");
+
+            ConjurMuleConnection connection = provider.connect();
+
+            assertNotNull(connection);
+            assertEquals("spiffeSecret", connection.getValue());
+        }
+    }
+
+    @Test
+    @DisplayName("connect should throw ConnectionException when cert auth service ID set but cert file missing")
+    public void testConnectCertAuthMissingCertThrowsException() throws Exception {
+        setPrivateField(provider, "key", "db/password");
+        setPrivateField(provider, "conjurAuthnCertServiceId", "my-service");
+        // No conjurClientCertFile or conjurClientCert
+
+        assertThrows(ConnectionException.class, () -> provider.connect());
+    }
+
+    @Test
+    @DisplayName("connect should throw ConnectionException when cert auth service ID set but key file missing")
+    public void testConnectCertAuthMissingKeyThrowsException() throws Exception {
+        setPrivateField(provider, "key", "db/password");
+        setPrivateField(provider, "conjurAuthnCertServiceId", "my-service");
+        setPrivateField(provider, "conjurClientCertFile", "/path/to/cert.crt");
+        // No conjurClientKeyFile or conjurClientKey
+
+        assertThrows(ConnectionException.class, () -> provider.connect());
+    }
+
     private void setPrivateField(Object target, String fieldName, Object value) throws Exception {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);

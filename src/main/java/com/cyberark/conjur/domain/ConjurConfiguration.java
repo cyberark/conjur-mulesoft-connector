@@ -138,6 +138,41 @@ public class ConjurConfiguration {
     private String conjurCertFile;
 
     /**
+     * authn-cert authenticator service ID (e.g. {@code acme-vm})
+     */
+    @Parameter
+    private String conjurAuthnCertServiceId;
+
+    /**
+     * Path to the client X.509 certificate file (PEM) used for mTLS
+     */
+    @Parameter
+    private String conjurClientCertFile;
+
+    /**
+     * Path to the client private key file (PEM) used for mTLS.
+     * File permissions must be owner-read-only (0600 or stricter).
+     */
+    @Parameter
+    private String conjurClientKeyFile;
+
+    /**
+     * Inline PEM content of the client X.509 certificate.
+     * Prefer {@link #conjurClientCertFile}; if using inline PEM, protect it
+     * with Mule Secure Properties ({@code secure::} prefix).
+     */
+    @Parameter
+    private String conjurClientCert;
+
+    /**
+     * Inline PEM content of the client private key.
+     * Must never appear in plaintext in Mule config XML — always wrap with
+     * Mule Secure Properties ({@code secure::} prefix).
+     */
+    @Parameter
+    private String conjurClientKey;
+
+    /**
      * Getter method to return Conjur Account
      * @return conjurAccount
      */
@@ -235,5 +270,45 @@ public class ConjurConfiguration {
      */
     public void setConjurCertFile(String conjurCertFile) {
         this.conjurCertFile = conjurCertFile;
+    }
+
+    public String getConjurAuthnCertServiceId() {
+        return conjurAuthnCertServiceId;
+    }
+
+    public void setConjurAuthnCertServiceId(String conjurAuthnCertServiceId) {
+        this.conjurAuthnCertServiceId = conjurAuthnCertServiceId;
+    }
+
+    public String getConjurClientCertFile() {
+        return conjurClientCertFile;
+    }
+
+    public void setConjurClientCertFile(String conjurClientCertFile) {
+        this.conjurClientCertFile = conjurClientCertFile;
+    }
+
+    public String getConjurClientKeyFile() {
+        return conjurClientKeyFile;
+    }
+
+    public void setConjurClientKeyFile(String conjurClientKeyFile) {
+        this.conjurClientKeyFile = conjurClientKeyFile;
+    }
+
+    public String getConjurClientCert() {
+        return conjurClientCert;
+    }
+
+    public void setConjurClientCert(String conjurClientCert) {
+        this.conjurClientCert = conjurClientCert;
+    }
+
+    public String getConjurClientKey() {
+        return conjurClientKey;
+    }
+
+    public void setConjurClientKey(String conjurClientKey) {
+        this.conjurClientKey = conjurClientKey;
     }
 }

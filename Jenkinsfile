@@ -10,17 +10,13 @@ properties([
 
 // Performs release promotion.  No other stages will be run
 if (params.MODE == 'PROMOTE') {
-  release.promote(params.VERSION_TO_PROMOTE) { infrapool, sourceVersion, targetVersion, assetDirectory ->
+  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
     // Any assets from sourceVersion Github release are available in assetDirectory
     // Any version number updates from sourceVersion to targetVersion occur here
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
 
-    //Note: assetDirectory is on the infrapool agent, not the local Jenkins agent.
-    // Pass assetDirectory through to publish.sh as an env var.
-    env.ASSET_DIR = assetDirectory
-
-    infrapool.agentSh """
+    sh """
       set -xuo pipefail
       git checkout "v${sourceVersion}"
       echo -n "${targetVersion}" > VERSION
@@ -28,7 +24,7 @@ if (params.MODE == 'PROMOTE') {
       ./build_tool_image.sh
       ./build_package.sh
     """
-    infrapool.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+    sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
   }
 
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
@@ -36,7 +32,7 @@ if (params.MODE == 'PROMOTE') {
 }
 
 pipeline {
-  agent { label 'conjur-enterprise-common-agent' }
+  agent { label 'conjur-enterprise-AmznDocker' }
 
   options {
     timestamps()
@@ -68,30 +64,20 @@ pipeline {
       }
     }
 
-    stage('Get InfraPool ExecutorV2 Agent(s)') {
-      steps {
-        script {
-          // Request ExecutorV2 agents for 1 hour(s)
-          INFRAPOOL_EXECUTORV2_AGENTS = getInfraPoolAgent(type: 'ExecutorV2', quantity: 1, duration: 1)
-          INFRAPOOL_EXECUTORV2_AGENT_0 = INFRAPOOL_EXECUTORV2_AGENTS[0]
-          infrapool = infraPoolConnect(INFRAPOOL_EXECUTORV2_AGENT_0, { })
-        }
-      }
-    }
-
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
       steps {
         script {
-          updateVersion(infrapool, 'CHANGELOG.md', "${BUILD_NUMBER}")
+          updateVersion('CHANGELOG.md', "${BUILD_NUMBER}")
         }
       }
     }
+
     stage('Mule Build') {
       steps {
         script {
-          infrapool.agentSh './build_tool_image.sh'
-          infrapool.agentSh './build_package.sh'
+          sh './build_tool_image.sh'
+          sh './build_package.sh'
         }
       }
     }
@@ -99,15 +85,13 @@ pipeline {
     stage('Run Unit Tests & Report Coverage') {
       steps {
         script {
-          infrapool.agentSh './run_unit_tests.sh'
+          sh './run_unit_tests.sh'
         }
       }
       post {
         always {
           script {
-            infrapool.agentArchiveArtifacts artifacts: 'target/*.jar'
-            infrapool.agentStash name: 'surefire-reports-oss', includes: 'target/surefire-reports/*.xml'
-            unstash 'surefire-reports-oss'
+            archiveArtifacts artifacts: 'target/*.jar'
             junit 'target/surefire-reports/*.xml'
           }
         }
@@ -123,18 +107,13 @@ pipeline {
 
       steps {
         script {
-          release(infrapool, { billOfMaterialsDirectory, assetDirectory ->
+          release({ billOfMaterialsDirectory, assetDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
-            infrapool.agentSh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+            sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
           })
         }
       }
-    }
-  }
-  post {
-    always {
-      releaseInfraPoolAgent('.infrapool/release_agents')
     }
   }
 }

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.7] - 2026-10-01
+
+### Security
+- Reduced Docker image CVEs from 106 to 2 by migrating base images to Alpine Linux
+
 ## [2.0.6] - 2026-08-13
 
 ### Added

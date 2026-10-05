@@ -1,21 +1,21 @@
-# Use an official Python runtime as a parent image
-FROM python:3.15-rc-slim-trixie
+FROM python:3.13-alpine
+
+# Upgrade Alpine packages to pick up any available security patches.
+RUN apk update && \
+    apk upgrade --no-cache && \
+    rm -rf /var/cache/apk/*
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip3 install --user conjur-client
-RUN echo "Building the Docker image now 1..."
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir conjur-client requests
 
 # Copy the entire application directory into the container
 COPY . .
 
-
-RUN pip install --upgrade requests
-RUN pip3 install --user .
-RUN echo "Building the Docker image now 2..."
+RUN pip install --no-cache-dir .
 
 CMD ["python3", "integrationtestcases.py"]

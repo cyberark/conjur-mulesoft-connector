@@ -156,18 +156,31 @@ The current MUnit integration test setup resolves Mule EE-related runtime depend
 
 If integration tests fail with a `401 Unauthorized` while resolving MuleSoft Enterprise dependencies, a practical local workaround is to warm your local Maven cache using Anypoint Studio.
 
-In some environments, opening and running a simple Mule project in Anypoint Studio causes required runtime dependencies to be downloaded into your local Maven cache.
+The MUnit app targets **Mule 4.12.2 / MUnit 3.7.3**. Anypoint Studio must be used with a project on that exact runtime version to seed all required EE artifacts into the local Maven cache.
 
 1. Install Anypoint Studio.
-2. Create a simple Mule project.
-3. Run the project once from Studio.
-4. Re-run these integration tests from this repository.
-
-After you run the application in Studio, you should have `licm` dependencies in your local Maven cache. To double-check:
+2. Create a new Mule project and select runtime **4.12.2**.
+3. Run the project once from Studio — this downloads all required EE runtime services into `~/.m2`.
+4. Verify the key EE artifact is now present:
 
 ```bash
-find ~/.m2/repository/com/mulesoft/licm -type f | sort
+ls ~/.m2/repository/org/mule/services/mule-service-soap/1.9.10/mule-service-soap-1.9.10-mule-service.jar
 ```
+
+5. Clean up any stale failure records left by previous failed download attempts:
+
+```bash
+find ~/.m2/repository/org/mule/services -name "*.lastUpdated" -delete
+find ~/.m2/repository/com/mulesoft -name "*.lastUpdated" -delete
+```
+
+6. Delete any stale build output from a previous failed run:
+
+```bash
+rm -rf src/test/integration-tests/munit-app/target/
+```
+
+7. Re-run these integration tests from this repository.
 
 Local cache location used by the test runner:
 

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.8] - 2026-10-13
+
+### Security
+- Eliminated all HIGH/CRITICAL CVEs from Docker images by upgrading base images
+  from Alpine 3.23 to Alpine 3.24 and applying targeted zlib patch (CVE-2026-85091)
+
+### Changed
+- MUnit integration tests upgraded from Mule 4.10.0 / MUnit 3.6.1 to Mule 4.12.2 / MUnit 3.7.3
+- Updated integration test troubleshooting documentation
+
 ## [2.0.7] - 2026-10-01
 
 ### Security

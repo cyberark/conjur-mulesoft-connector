@@ -45,7 +45,7 @@ SaaS/Edge require exported env vars (`INFRAPOOL_CONJUR_APPLIANCE_URL`, `INFRAPOO
 - `src/test/java/...` — JUnit/Mockito unit tests mirroring `src/main/java` package structure
 - `src/test/integration-tests/` — MUnit sample app (`munit-app/`) and a Conjur bootstrap environment (`secrets-manager-integration-environment-bootstrap/`) used for local end-to-end testing
 - `pom.xml` — Maven build, Mule extension packaging, profiles for Central Portal publishing (`central-portal`) and GPG signing (`sign`)
-- `Dockerfile`, `Dockerfile.aws`, `Dockerfile.test`, `tools.Dockerfile` — container images for packaging, AWS deploy, unit testing, and the Maven build "tools" image
+- `Dockerfile`, `Dockerfile.test`, `tools.Dockerfile` — container images for packaging, unit testing, and the Maven build "tools" image
 - `build_tool_image.sh`, `build_package.sh`, `publish.sh`, `deploy_mule.sh`, `run_unit_tests.sh` — Docker-driven build/test/publish/deploy scripts
 - `fetch_secrets.sh`, `fetch_secrets_enterprise.sh` — example shell scripts showing raw Conjur `authn`/`secrets` REST calls (not part of the connector runtime; illustrative/manual test helpers)
 - `conjur.yml`, `secrets.yml`, `conf/policy/*.yml` — sample Conjur policy files (hosts/variables) used to bootstrap a local Conjur instance for manual/integration testing

@@ -1,13 +1,12 @@
 ARG java_version=17
 
-FROM amazoncorretto:${java_version}-alpine3.23-jdk
+FROM amazoncorretto:${java_version}-alpine3.24-jdk
 
 ARG maven_version
 
 RUN apk add --no-cache \
     curl \
-    unzip \
     gnupg \
     ca-certificates \
-    maven=${maven_version} \
-    yq
+    'zlib>=1.3.2-r1' \
+    maven=${maven_version}

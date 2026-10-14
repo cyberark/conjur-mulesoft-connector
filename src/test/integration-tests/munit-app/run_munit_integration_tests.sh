@@ -5,30 +5,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEST_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-
 SUBMODULE_BASE_DIR="$TEST_ROOT/secrets-manager-integration-environment-bootstrap"
-source "$SUBMODULE_BASE_DIR/scripts/helpers.sh"
 
-validate_deployment_type "$@"
-set_compose_file
+DEPLOYMENT_TYPE="$1"
+INTEGRATION_CONFIG="$2"
+OUTPUT_DIR="${3:-output-integration}"
 
-CONFIG_FILE="$SUBMODULE_BASE_DIR/configs/${INTEGRATION_TYPE}.env"
-
-if [[ -f "$CONFIG_FILE" ]]; then
-    set -a  # Export all subsequent variable assignments
-    source "$CONFIG_FILE"
-    set +a  # Stop exporting
-    echo "[INFO] Using profile: $PROFILE"
-else
-    echo "[ERROR] Config file not found: $CONFIG_FILE"
-    exit 1
-fi
-
-OUTPUT_DIR="$TEST_ROOT/output-integration"
-mkdir -p "$OUTPUT_DIR"
-export OUTPUT_DIR
-
-"$SUBMODULE_BASE_DIR/scripts/setup_integration_env.sh" "$DEPLOYMENT_TYPE" "$INTEGRATION_TYPE" "$OUTPUT_DIR"
+"$SUBMODULE_BASE_DIR/scripts/create-integration.sh" --name mulesoft --auth api --env-vars false
+source "$SUBMODULE_BASE_DIR/scripts/setup_integration_env.sh" "$DEPLOYMENT_TYPE" "$INTEGRATION_CONFIG" "$OUTPUT_DIR"
 
 VERSION_FILE="$PROJECT_ROOT/VERSION"
 
@@ -36,9 +20,9 @@ CONNECTOR_VERSION="$(tr -d '\r\n' < "$VERSION_FILE")"
 echo "Using connector version: $CONNECTOR_VERSION"
 
 
-API_KEY="$(tr -d '\r\n' < "$OUTPUT_DIR/host_api_key.txt")"
-SECRET_PATH="$(tr -d '\r\n' < "$OUTPUT_DIR/secret_path.txt")"
-CERT_IN_CONTAINER="/output-integration/conjur.pem"
+API_KEY="$(tr -d '\r\n' < "$OUTPUT_DIR/configs/host_api_key.txt")"
+SECRET_PATH="$(tr -d '\r\n' < "$OUTPUT_DIR/configs/secret_path.txt")"
+CERT_IN_CONTAINER="/output-integration/certificates/conjur.pem"
 
 if [[ "$DEPLOYMENT_TYPE" == "saas" || "$DEPLOYMENT_TYPE" == "edge" ]]; then
     HOST_PATH="host/data/mulesoft/mulesofthost"

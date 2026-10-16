@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Retrieve SDK version from CHANGELOG instead of VERSION file (CNJR-7704)
-  
+
 ## [2.0.2] - 2025-04-01
 - Added telemetry headers
 

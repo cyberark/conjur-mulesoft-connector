@@ -3,5 +3,5 @@
 	url = https://github.com/conjurdemos/conjur-intro
 [submodule "src/test/integration-tests/secrets-manager-integration-environment-bootstrap"]
 	path = src/test/integration-tests/secrets-manager-integration-environment-bootstrap
-	url = https://github.cyberng.com/Conjur-Enterprise/secrets-manager-integration-environment-bootstrap.git
+	url = ../secrets-manager-integration-environment-bootstrap
 	branch = main

@@ -62,6 +62,15 @@ POST <conjurApplianceUrl>/authn-cert/<conjurAuthnCertServiceId>/<conjurAccount>[
 - **Request host-mode** — `conjurAuthnLogin` is set → included (URL-encoded) in the path.
 - **SPIFFE mode** — `conjurAuthnLogin` is empty → omitted from the path; identity is derived from the certificate's SPIFFE SAN.
 
+## Building from Source
+
+```bash
+# External contributors only — skip the `cp` step if you already have a configured mvn-settings.xml:
+cp mvn-settings.xml.dist mvn-settings.xml
+
+mvn --settings mvn-settings.xml clean install -DskipTests
+```
+
 ## Running Unit Tests
 
 ### Prerequisites

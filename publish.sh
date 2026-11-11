@@ -26,6 +26,9 @@ if [[ "${MODE:-}" == "PROMOTE" ]]; then
     docker run \
         -e CENTRAL_PORTAL_USERNAME \
         -e CENTRAL_PORTAL_TOKEN \
+        -e ARTIFACTORY_HOST \
+        -e ARTIFACTORY_USERNAME \
+        -e ARTIFACTORY_PASSWORD \
         --volume "${PWD}:${PWD}" \
         --volume "${PWD}/maven_cache":/root/.m2 \
         --volume "$GPG_PASSWORD:/gpg_password" \

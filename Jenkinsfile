@@ -10,21 +10,23 @@ properties([
 
 // Performs release promotion.  No other stages will be run
 if (params.MODE == 'PROMOTE') {
-  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+  release.promote(params.VERSION_TO_PROMOTE, [agent: 'conjur-enterprise-AmznDocker']) { sourceVersion, targetVersion, assetDirectory ->
     // Any assets from sourceVersion Github release are available in assetDirectory
     // Any version number updates from sourceVersion to targetVersion occur here
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
 
-    sh """
-      set -xuo pipefail
-      git checkout "v${sourceVersion}"
-      echo -n "${targetVersion}" > VERSION
-      cp VERSION VERSION.original
-      ./build_tool_image.sh
-      ./build_package.sh
-    """
-    sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+    artifactoryAuth.withCreds(null, 'auto') {
+      sh """
+        set -xuo pipefail
+        git checkout "v${sourceVersion}"
+        echo -n "${targetVersion}" > VERSION
+        cp VERSION VERSION.original
+        ./build_tool_image.sh
+        ./build_package.sh
+      """
+      sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+    }
   }
 
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
@@ -77,7 +79,9 @@ pipeline {
       steps {
         script {
           sh './build_tool_image.sh'
-          sh './build_package.sh'
+          artifactoryAuth.withCreds(null, 'reader') {
+            sh './build_package.sh'
+          }
         }
       }
     }
@@ -110,7 +114,9 @@ pipeline {
           release({ billOfMaterialsDirectory, assetDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
-            sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+            artifactoryAuth.withCreds(null, 'auto') {
+              sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
+            }
           })
         }
       }

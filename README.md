@@ -65,10 +65,11 @@ POST <conjurApplianceUrl>/authn-cert/<conjurAuthnCertServiceId>/<conjurAccount>[
 ## Building from Source
 
 ```bash
-# External contributors only — skip the `cp` step if you already have a configured mvn-settings.xml:
-cp mvn-settings.xml.dist mvn-settings.xml
+# Internal contributors — uses internal Artifactory mirror:
+mvn --settings mvn-settings.xml install -DskipTests
 
-mvn --settings mvn-settings.xml clean install -DskipTests
+# External contributors — fetches directly from Maven Central, no credentials needed:
+mvn --settings mvn-settings.xml.dist install -DskipTests
 ```
 
 ## Running Unit Tests

@@ -10,12 +10,22 @@
       <username>${env.ARTIFACTORY_USERNAME}</username>
       <password>${env.ARTIFACTORY_PASSWORD}</password>
     </server>
+    <server>
+      <id>artifactory-mulesoft</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_PASSWORD}</password>
+    </server>
   </servers>
   <mirrors>
     <mirror>
       <id>artifactory</id>
       <mirrorOf>central</mirrorOf>
       <url>https://${env.ARTIFACTORY_HOST}/artifactory/mavencentral-remote</url>
+    </mirror>
+    <mirror>
+      <id>artifactory-mulesoft</id>
+      <mirrorOf>mulesoft-releases,mulesoft-snapshots,mule-plugin</mirrorOf>
+      <url>https://${env.ARTIFACTORY_HOST}/artifactory/mulesoft-remote</url>
     </mirror>
   </mirrors>
 </settings>

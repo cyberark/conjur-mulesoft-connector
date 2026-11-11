@@ -16,7 +16,7 @@ if (params.MODE == 'PROMOTE') {
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
 
-    artifactoryAuth.withCreds(null, 'auto') {
+    artifactoryAuth.withCreds(null, 'reader') {
       sh """
         set -xuo pipefail
         git checkout "v${sourceVersion}"
@@ -89,7 +89,9 @@ pipeline {
     stage('Run Unit Tests & Report Coverage') {
       steps {
         script {
-          sh './run_unit_tests.sh'
+          artifactoryAuth.withCreds(null, 'reader') {
+            sh './run_unit_tests.sh'
+          }
         }
       }
       post {
@@ -114,9 +116,7 @@ pipeline {
           release({ billOfMaterialsDirectory, assetDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
-            artifactoryAuth.withCreds(null, 'auto') {
-              sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
-            }
+            sh "ASSET_DIR=\"${assetDirectory}\" summon ./publish.sh"
           })
         }
       }

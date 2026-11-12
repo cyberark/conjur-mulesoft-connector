@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Migrated Maven dependency resolution to internal Artifactory mirror
 - Added `mvn-settings.xml.dist` for external contributor builds
 - Fixed `release.promote()` node routing by adding `conjur-enterprise-AmznDocker` agent
-- Applied least-privilege CI credentials
 
 ## [2.0.8] - 2026-10-13
 

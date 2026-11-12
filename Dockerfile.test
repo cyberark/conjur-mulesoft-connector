@@ -7,8 +7,6 @@ RUN apk add --no-cache 'zlib>=1.3.2-r1'
 
 WORKDIR /repo
 
-# Pre-warm Maven cache: credentials are mounted as a BuildKit secret
-# and are NOT written to any image layer.
 COPY pom.xml .
 RUN --mount=type=secret,id=mvn_settings,target=/root/.m2/settings.xml \
     mvn --batch-mode -f pom.xml dependency:go-offline

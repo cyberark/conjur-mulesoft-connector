@@ -62,6 +62,16 @@ POST <conjurApplianceUrl>/authn-cert/<conjurAuthnCertServiceId>/<conjurAccount>[
 - **Request host-mode** — `conjurAuthnLogin` is set → included (URL-encoded) in the path.
 - **SPIFFE mode** — `conjurAuthnLogin` is empty → omitted from the path; identity is derived from the certificate's SPIFFE SAN.
 
+## Building from Source
+
+```bash
+# Internal contributors — uses internal Artifactory mirror:
+mvn --settings mvn-settings.xml install -DskipTests
+
+# External contributors — fetches directly from Maven Central, no credentials needed:
+mvn --settings mvn-settings.xml.dist install -DskipTests
+```
+
 ## Running Unit Tests
 
 ### Prerequisites
